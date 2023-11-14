@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "aoc-tiles"
+version = "0.1.0"
+description = "Fancy Advent of Code README tiles showing the completion status of the challenges per day"
+authors = ["Brutenis Gliwa, <brutenis@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pillow = "^10.1.0"
+requests = "^2.31.0"
+pyyaml = "^6.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
