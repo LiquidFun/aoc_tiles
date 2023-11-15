@@ -6,6 +6,9 @@ authors = ["Brutenis Gliwa, <brutenis@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
 
+[tool.poetry.scripts]
+aoc-tiles = 'aoc_tiles.tiles:main'
+
 [tool.poetry.dependencies]
 python = "^3.8"
 pillow = "^10.1.0"

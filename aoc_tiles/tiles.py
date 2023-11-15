@@ -137,7 +137,7 @@ DEBUG = False
 PERSONAL_LEADERBOARD_URL = "https://adventofcode.com/{year}/leaderboard/self"
 
 # Location of yaml file where file extensions are mapped to colors
-GITHUB_LANGUAGES_PATH = AOC_TILES_SCRIPT_DIR / "github_languages.yml"
+GITHUB_LANGUAGES_PATH = AOC_DIR / "github_languages.yml"
 
 
 @cache

@@ -1,3 +1,5 @@
+This project is currently being reworked in order to make it easier to use! It should be ready for AoC 2023!
+
 # AoC Tiles
 
 This script creates a graphic for each day for each year of the Advent of Code. 
