@@ -1,5 +1,6 @@
 class HTMLTag:
     """A convenience class for creating HTML tags, can be used in a with statement, which will close the tag."""
+
     def __init__(self, parent: "HTML", tag: str, closing: bool = True, **kwargs):
         self.parent = parent
         self.tag = tag
@@ -21,6 +22,7 @@ class HTML:
 
     Originally, this was used a lot more, however at this point it is only needed for a single with statement.
     """
+
     tags: list[str] = []
     depth = 0
 
@@ -36,4 +38,3 @@ class HTML:
 
     def __str__(self):
         return "\n".join(self.tags)
-

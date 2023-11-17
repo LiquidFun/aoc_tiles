@@ -45,6 +45,7 @@ PERSONAL_LEADERBOARD_URL = "https://adventofcode.com/{year}/leaderboard/self"
 # Location of yaml file where file extensions are mapped to colors
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "github_languages.yml"
 
+
 def get_extension_to_colors():
     extension_to_color = {}
     with open(GITHUB_LANGUAGES_PATH) as file:
@@ -54,6 +55,7 @@ def get_extension_to_colors():
                 for extension in data["extensions"]:
                     extension_to_color[extension.lower()] = data["color"]
     return extension_to_color
+
 
 def darker_color(c: Tuple[int, int, int, int]) -> Tuple[int, int, int, int]:
     return c[0] - 10, c[1] - 10, c[2] - 10, 255
@@ -69,10 +71,10 @@ def color_similarity(color_a, color_b, threshold):
     return abs(luminance(color_a) - luminance(color_b)) < threshold
 
 
-
 @cache
 def get_font(self, size: int, path: str):
     return ImageFont.truetype(str(path), size)
+
 
 FONTS_PATH = Path(__file__).parent / "resources" / "fonts"
 
@@ -83,8 +85,8 @@ secondary_font = functools.partial(get_font, path=FONTS_PATH / "SourceCodePro-Re
 
 DayScores = namedtuple("DayScores", ["time1", "rank1", "score1", "time2", "rank2", "score2"], defaults=[None] * 3)
 
+
 class AoCTiles:
-    
     def __init__(self, config: Config):
         self.config = config
         self.extension_to_color: Dict[str, str] = get_extension_to_colors()
@@ -134,11 +136,8 @@ class AoCTiles:
                 solution_paths_dict[year][day] = [s.as_posix() for s in solutions]
         return solution_paths_dict
 
-
-
     def get_paths_matching_regex(self, path: Path, pattern: str):
         return sorted([p for p in path.iterdir() if re.fullmatch(pattern, p.name)])
-
 
     def find_recursive_solution_files(self, directory: Path) -> List[Path]:
         solution_paths = []
@@ -146,7 +145,6 @@ class AoCTiles:
             if path.is_file() and path.suffix in self.extension_to_color:
                 solution_paths.append(path)
         return solution_paths
-
 
     def parse_leaderboard(self, leaderboard_path: Path) -> Dict[int, DayScores]:
         no_stars = "You haven't collected any stars... yet."
@@ -168,7 +166,6 @@ class AoCTiles:
                 leaderboard[int(day)] = DayScores(*scores)
             return leaderboard
 
-
     def request_leaderboard(self, year: int) -> Dict[int, DayScores]:
         leaderboard_path = self.config.cache_dir / f"leaderboard{year}.html"
         if leaderboard_path.exists():
@@ -183,7 +180,9 @@ class AoCTiles:
                 return leaderboard
         with open(self.config.session_cookie_path) as cookie_file:
             session_cookie = cookie_file.read().strip()
-            assert len(session_cookie) == 128, f"Session cookie is not 128 characters long, make sure to remove the prefix!"
+            assert (
+                len(session_cookie) == 128
+            ), f"Session cookie is not 128 characters long, make sure to remove the prefix!"
             data = requests.get(
                 PERSONAL_LEADERBOARD_URL.format(year=year),
                 headers={"User-Agent": "https://github.com/LiquidFun/adventofcode by Brutenis Gliwa"},
@@ -193,10 +192,6 @@ class AoCTiles:
             with open(leaderboard_path, "w") as file:
                 file.write(data)
         return self.parse_leaderboard(leaderboard_path)
-
-
-
-
 
     def get_alternating_background(self, languages, both_parts_completed=True, *, stripe_width=20):
         colors = [ImageColor.getrgb(self.extension_to_color[language]) for language in languages]
@@ -216,7 +211,6 @@ class AoCTiles:
             fill_with_colors(colors, not both_parts_completed)
         return image
 
-
     def format_time(self, time: str) -> str:
         """Formats time as mm:ss if the time is below 1 hour, otherwise it returns >1h to a max of >24h
 
@@ -233,7 +227,6 @@ class AoCTiles:
             formatted = f">{h}h" if int(h) >= 1 else f"{m:02}:{s:02}"
         return f"{formatted:>5}"
 
-
     def draw_star(self, drawer: ImageDraw, at: Tuple[int, int], size=9, color="#ffff0022", num_points=5):
         """Draws a star at the given position"""
         diff = math.pi * 2 / num_points / 2
@@ -243,8 +236,9 @@ class AoCTiles:
             points.append((at[0] + math.cos(angle) * factor, at[1] + math.sin(angle) * factor))
         drawer.polygon(points, fill=color)
 
-
-    def generate_day_tile_image(self, day: str, year: str, languages: List[str], day_scores: DayScores | None, path: Path):
+    def generate_day_tile_image(
+        self, day: str, year: str, languages: List[str], day_scores: DayScores | None, path: Path
+    ):
         """Saves a graphic for a given day and year. Returns the path to it."""
         image = self.get_alternating_background(languages, not (day_scores is None or day_scores.time2 is None))
         drawer = ImageDraw(image)
@@ -299,8 +293,9 @@ class AoCTiles:
 
         image.save(path)
 
-
-    def handle_day(self, day: int, year: int, solutions: List[str], html: HTML, day_scores: DayScores | None, needs_update: bool):
+    def handle_day(
+        self, day: int, year: int, solutions: List[str], html: HTML, day_scores: DayScores | None, needs_update: bool
+    ):
         languages = []
         for solution in solutions:
             extension = "." + solution.split(".")[-1]
@@ -318,15 +313,12 @@ class AoCTiles:
         with html.tag("a", href=str(solution_link)):
             html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
 
-
-
     def fill_empty_days_in_dict(self, day_to_solutions: Dict[int, List[str]], max_day) -> None:
         if not self.config.create_all_days and len(day_to_solutions) == 0:
             print(f"Current year has no solutions!")
         for day in range(1, max_day + 1):
             if day not in day_to_solutions:
                 day_to_solutions[day] = []
-
 
     def handle_year(self, year: int, day_to_solutions: Dict[int, List[str]]):
         leaderboard = self.request_leaderboard(year)
@@ -336,7 +328,9 @@ class AoCTiles:
             day_to_solutions[23] = []
         html = HTML()
         with html.tag("h1", align="center"):
-            stars = sum((ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None)
+            stars = sum(
+                (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
+            )
             html.push(f"{year} - {stars} ⭐")
         max_day = 25 if self.config.create_all_days else max(*day_to_solutions, *leaderboard)
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
@@ -352,26 +346,30 @@ class AoCTiles:
 
         with open(completed_cache_path, "w") as file:
             completed_days = [day for day, scores in leaderboard.items() if scores.time2 is not None]
-            file.write(json.dumps({day: solutions for day, solutions in day_to_solutions.items() if day in completed_days}))
+            file.write(
+                json.dumps({day: solutions for day, solutions in day_to_solutions.items() if day in completed_days})
+            )
 
         with open(self.config.readme_path, "r", encoding="utf-8") as file:
             text = file.read()
             begin = "<!-- AOC TILES BEGIN -->"
             end = "<!-- AOC TILES END -->"
-            assert begin in text and end in text, f"Could not find AOC TILES markers '{begin}' and '{end}' in the " \
-                                                  f"README.md! Make sure to add them to the README at {self.config.readme_path}."
+            assert begin in text and end in text, (
+                f"Could not find AOC TILES markers '{begin}' and '{end}' in the "
+                f"README.md! Make sure to add them to the README at {self.config.readme_path}."
+            )
             pattern = re.compile(rf"{begin}.*{end}", re.DOTALL | re.MULTILINE)
             new_text = pattern.sub(f"{begin}\n{html}\n{end}", text)
 
         with open(self.config.readme_path, "w", encoding="utf-8") as file:
             file.write(str(new_text))
 
-
     def run(self):
         print("Running aoc-tiles")
         for year, day_to_solutions_list in self.get_solution_paths_dict_for_years().items():
             print(f"=== Generating table for year {year} ===")
             self.handle_year(year, day_to_solutions_list)
+
 
 def main():
     config = Config()

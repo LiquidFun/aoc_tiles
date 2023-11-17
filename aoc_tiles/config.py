@@ -4,6 +4,7 @@ from typing import Literal
 
 from PIL import ImageColor
 
+
 @dataclass
 class Config:
     aoc_dir: Path = Path("./")
@@ -30,7 +31,6 @@ class Config:
         self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
         self.image_dir = self.aoc_tiles_dir / "tiles"
         self.cache_dir = self.aoc_tiles_dir / "cache"
-
 
 
 # class Config:
