@@ -1,47 +1,16 @@
-"""
-Author: LiquidFun
-Source: https://github.com/LiquidFun/adventofcode
-
-To use this script, you need to have a file named
-"session.cookie" in the same folder as this script.
-
-It should contain a single line, the "session" cookie
-when logged in to https://adventofcode.com. Just
-paste it in there.
-
-Then install the requirements as listed in the requirements.txt:
-    pip install -r requirements.txt
-
-Then run the script:
-    python create_aoc_tiles.py
-"""
-import itertools
-import math
-import time
-from collections import namedtuple
 from pathlib import Path
 import re
 import json
 from typing import Literal, Union, List, Dict, Tuple, Optional
 
-import requests
-import rich.traceback
 
 from aoc_tiles.drawer import TileDrawer
-from aoc_tiles.leaderboard import DayScores
-
-rich.traceback.install()
+from aoc_tiles.leaderboard import DayScores, request_leaderboard
 
 from aoc_tiles.colors import extension_to_colors
 from aoc_tiles.config import Config
 from aoc_tiles.html import HTML
 
-# ======================================================
-# === The following likely do not need to be changed ===
-# ======================================================
-
-# URL for the personal leaderboard (same for everyone)
-PERSONAL_LEADERBOARD_URL = "https://adventofcode.com/{year}/leaderboard/self"
 
 
 class AoCTiles:
@@ -104,54 +73,6 @@ class AoCTiles:
                 solution_paths.append(path)
         return solution_paths
 
-    def parse_leaderboard(self, leaderboard_path: Path) -> Dict[int, DayScores]:
-        no_stars = "You haven't collected any stars... yet."
-        start = '<span class="leaderboard-daydesc-both"> *Time *Rank *Score</span>\n'
-        end = "</pre>"
-        with open(leaderboard_path) as file:
-            html = file.read()
-            if no_stars in html:
-                return {}
-            matches = re.findall(rf"{start}(.*?){end}", html, re.DOTALL | re.MULTILINE)
-            assert len(matches) == 1, f"Found {'no' if len(matches) == 0 else 'more than one'} leaderboard?!"
-            table_rows = matches[0].strip().split("\n")
-            leaderboard = {}
-            for line in table_rows:
-                day, *scores = re.split(r"\s+", line.strip())
-                # replace "-" with None to be able to handle the data later, like if no score existed for the day
-                scores = [s if s != "-" else None for s in scores]
-                assert len(scores) in (3, 6), f"Number scores for {day=} ({scores}) are not 3 or 6."
-                leaderboard[int(day)] = DayScores(*scores)
-            return leaderboard
-
-    def request_leaderboard(self, year: int) -> Dict[int, DayScores]:
-        leaderboard_path = self.config.cache_dir / f"leaderboard{year}.html"
-        if leaderboard_path.exists():
-            leaderboard = self.parse_leaderboard(leaderboard_path)
-            less_than_30mins = time.time() - leaderboard_path.lstat().st_mtime < 60 * 30
-            if less_than_30mins:
-                print(f"Leaderboard for {year} is younger than 30 minutes, skipping download in order to avoid DDOS.")
-                return leaderboard
-            has_no_none_values = all(itertools.chain(map(list, leaderboard.values())))
-            if has_no_none_values and len(leaderboard) == 25:
-                print(f"Leaderboard for {year} is complete, no need to download.")
-                return leaderboard
-
-        with open(self.config.session_cookie_path) as cookie_file:
-            session_cookie = cookie_file.read().strip()
-            assert (
-                len(session_cookie) == 128
-            ), f"Session cookie is not 128 characters long, make sure to remove the prefix!"
-            data = requests.get(
-                PERSONAL_LEADERBOARD_URL.format(year=year),
-                headers={"User-Agent": "https://github.com/LiquidFun/aoc_tiles by Brutenis Gliwa"},
-                cookies={"session": session_cookie},
-            ).text
-            leaderboard_path.parent.mkdir(exist_ok=True, parents=True)
-            with open(leaderboard_path, "w") as file:
-                file.write(data)
-        return self.parse_leaderboard(leaderboard_path)
-
     def handle_day(
         self, day: int, year: int, solutions: List[str], html: HTML, day_scores: Optional[DayScores], needs_update: bool
     ):
@@ -167,7 +88,7 @@ class AoCTiles:
         day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}.png"
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
-            self.tile_drawer.draw_tile(f"{day:02}", f"{year:04}", languages, day_scores, day_graphic_path)
+            self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         with html.tag("a", href=str(solution_link)):
             html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
@@ -180,7 +101,7 @@ class AoCTiles:
                 day_to_solutions[day] = []
 
     def handle_year(self, year: int, day_to_solutions: Dict[int, List[str]]):
-        leaderboard = self.request_leaderboard(year)
+        leaderboard = request_leaderboard(year, self.config)
         if self.config.debug:
             leaderboard[25] = None
             leaderboard[24] = DayScores("22:22:22", "12313", "0")

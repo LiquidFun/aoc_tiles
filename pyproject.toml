@@ -7,7 +7,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [tool.poetry.scripts]
-aoc-tiles = 'aoc_tiles.tiles:main'
+aoc-tiles = 'aoc_tiles.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.8"
