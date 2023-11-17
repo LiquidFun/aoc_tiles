@@ -1,2 +1,6 @@
 /dist
 __pycache__
+session.cookie
+cache
+.idea
+.aoc_tiles

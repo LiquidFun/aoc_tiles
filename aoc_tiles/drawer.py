@@ -1,4 +1,5 @@
 import math
+from functools import partial
 from pathlib import Path
 from typing import List, Tuple, Union, Dict
 
@@ -50,40 +51,50 @@ class TileDrawer:
                     text_kwargs["fill"] = self.config.not_completed_color
                 break
 
-        font_color = text_kwargs["fill"]
+        draw_text = partial(drawer.text, **text_kwargs)
+        draw_line = partial(drawer.line, fill=text_kwargs["fill"], width=2)
 
         # === Left side ===
-        drawer.text((3, -5), "Day", align="left", font=main_font(20), **text_kwargs)
-        drawer.text((1, -10), str(day), align="center", font=main_font(75), **text_kwargs)
+        draw_text((3, -5), "Day", align="left", font=main_font(20))
+        draw_text((1, -10), str(day), align="center", font=main_font(75))
         # Calculate font size based on number of characters, because it might overflow
         lang_as_str = " ".join(languages)
         lang_font_size = max(6, int(18 - max(0, len(lang_as_str) - 8) * 1.3))
-        drawer.text((0, 74), lang_as_str, align="left", font=secondary_font(lang_font_size), **text_kwargs)
+        draw_text((0, 74), lang_as_str, align="left", font=secondary_font(lang_font_size))
 
         # === Right side (P1 & P2) ===
         for part in (1, 2):
             y = 50 if part == 2 else 0
-            time, rank = getattr(day_scores, f"time{part}", None), getattr(day_scores, f"rank{part}", None)
+            time = getattr(day_scores, f"time{part}", None)
+            rank = getattr(day_scores, f"rank{part}", None)
+
             if day_scores is not None and time is not None:
-                drawer.text((104, -5 + y), f"P{part} ", align="left", font=main_font(25), **text_kwargs)
-                if self.config.show_checkmark_instead_of_time_rank:
-                    drawer.line((160, 35 + y, 150, 25 + y), fill=font_color, width=2)
-                    drawer.line((160, 35 + y, 180, 15 + y), fill=font_color, width=2)
-                    continue
-                drawer.text((105, 25 + y), "time", align="right", font=secondary_font(10), **text_kwargs)
-                drawer.text((105, 35 + y), "rank", align="right", font=secondary_font(10), **text_kwargs)
-                drawer.text((143, 3 + y), format_time(time), align="right", font=secondary_font(18), **text_kwargs)
-                drawer.text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18), **text_kwargs)
+                draw_text((104, -5 + y), f"P{part} ", align="left", font=main_font(25))
+
+                if self.config.what_to_show_on_right_parts == "checkmark":
+                    draw_line((160, 35 + y, 150, 25 + y))
+                    draw_line((160, 35 + y, 180, 15 + y))
+
+                if self.config.what_to_show_on_right_parts == "time_and_rank":
+                    draw_text((105, 25 + y), "time", align="right", font=secondary_font(10))
+                    draw_text((105, 35 + y), "rank", align="right", font=secondary_font(10))
+                    draw_text((143, 3 + y), format_time(time), align="right", font=secondary_font(18))
+                    draw_text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18))
+
+                if self.config.what_to_show_on_right_parts == "loc":
+                    raise NotImplementedError("loc is not implemented yet")
+
             else:
-                drawer.line((140, 15 + y, 160, 35 + y), fill=font_color, width=2)
-                drawer.line((140, 35 + y, 160, 15 + y), fill=font_color, width=2)
+                # Draw cross
+                draw_line((140, 15 + y, 160, 35 + y))
+                draw_line((140, 35 + y, 160, 15 + y))
 
         if day_scores is None and not languages:
-            drawer.line((15, 85, 85, 85), fill=self.config.text_color, width=2)
+            draw_line((15, 85, 85, 85))
 
         # === Divider lines ===
-        drawer.line((100, 5, 100, 95), fill=font_color, width=1)
-        drawer.line((105, 50, 195, 50), fill=font_color, width=1)
+        draw_line((100, 5, 100, 95), width=1)
+        draw_line((105, 50, 195, 50), width=1)
 
         image.save(path)
 

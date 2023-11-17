@@ -16,8 +16,8 @@ def get_font(size: int, path: str):
 
 
 def main_font(size: int) -> ImageFont:
-    return get_font(size, FONTS_PATH / "paytoneone.ttf")
+    return get_font(size, FONTS_PATH / "PaytoneOne.ttf")
 
 
 def secondary_font(size: int) -> ImageFont:
-    return get_font(size, FONTS_PATH / "sourcecodepro-regular.otf")
+    return get_font(size, FONTS_PATH / "SourceCodePro-Regular.otf")
