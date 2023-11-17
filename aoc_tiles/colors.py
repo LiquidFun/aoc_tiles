@@ -5,7 +5,9 @@ from typing import Tuple, Dict
 
 import yaml
 
-GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yml"
+GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yaml"
+
+excludes = ["GCC Machine Description"]
 
 
 @lru_cache
@@ -17,6 +19,10 @@ def extension_to_colors():
             if "color" in data and "extensions" in data and data["type"] == "programming":
                 for extension in data["extensions"]:
                     extension_to_color[extension.lower()] = data["color"]
+
+    for exclude in excludes:
+        del extension_to_color[exclude]
+
     return extension_to_color
 
 

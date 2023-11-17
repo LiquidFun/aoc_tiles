@@ -57,6 +57,7 @@ class TileDrawer:
         # === Left side ===
         draw_text((3, -5), "Day", align="left", font=main_font(20))
         draw_text((1, -10), str(day), align="center", font=main_font(75))
+
         # Calculate font size based on number of characters, because it might overflow
         lang_as_str = " ".join(languages)
         lang_font_size = max(6, int(18 - max(0, len(lang_as_str) - 8) * 1.3))

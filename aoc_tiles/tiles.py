@@ -11,6 +11,8 @@ from aoc_tiles.colors import extension_to_colors
 from aoc_tiles.config import Config
 from aoc_tiles.html import HTML
 
+README_TILES_BEGIN = "<!-- AOC TILES BEGIN -->"
+README_TILES_END = "<!-- AOC TILES END -->"
 
 
 class AoCTiles:
@@ -132,8 +134,8 @@ class AoCTiles:
 
         with open(self.config.readme_path, "r", encoding="utf-8") as file:
             text = file.read()
-            begin = "<!-- AOC TILES BEGIN -->"
-            end = "<!-- AOC TILES END -->"
+            begin = README_TILES_BEGIN
+            end = README_TILES_END
             assert begin in text and end in text, (
                 f"Could not find AOC TILES markers '{begin}' and '{end}' in the "
                 f"README.md! Make sure to add them to the README at {self.config.readme_path}."
@@ -145,7 +147,8 @@ class AoCTiles:
             file.write(str(new_text))
 
     def run(self):
-        print("Running aoc-tiles")
+        print("Running AoC-Tiles")
         for year, day_to_solutions_list in self.get_solution_paths_dict_for_years().items():
             print(f"=== Generating table for year {year} ===")
+            print(year, day_to_solutions_list)
             self.handle_year(year, day_to_solutions_list)
