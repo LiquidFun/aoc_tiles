@@ -15,26 +15,25 @@ Then install the requirements as listed in the requirements.txt:
 Then run the script:
     python create_aoc_tiles.py
 """
-import functools
 import itertools
 import math
 import time
 from collections import namedtuple
-from functools import cache
 from pathlib import Path
 import re
 import json
-from typing import Literal, Union, List, Dict, Tuple
+from typing import Literal, Union, List, Dict, Tuple, Optional
 
 import requests
-from PIL import Image, ImageColor
-import yaml
-from PIL.ImageDraw import ImageDraw
-from PIL import ImageFont
+import rich.traceback
 
-from aoc_tiles.colors import get_extension_to_colors, darker_color, color_similarity
+from aoc_tiles.drawer import TileDrawer
+from aoc_tiles.leaderboard import DayScores
+
+rich.traceback.install()
+
+from aoc_tiles.colors import extension_to_colors
 from aoc_tiles.config import Config
-from aoc_tiles.fonts import main_font, secondary_font
 from aoc_tiles.html import HTML
 
 # ======================================================
@@ -45,16 +44,13 @@ from aoc_tiles.html import HTML
 PERSONAL_LEADERBOARD_URL = "https://adventofcode.com/{year}/leaderboard/self"
 
 
-DayScores = namedtuple("DayScores", ["time1", "rank1", "score1", "time2", "rank2", "score2"], defaults=[None] * 3)
-
-
 class AoCTiles:
     def __init__(self, config: Config):
         self.config = config
-        self.extension_to_color: Dict[str, str] = get_extension_to_colors()
+        self.tile_drawer = TileDrawer(self.config)
 
     # You can change this code entirely, or just change patterns above. You get more control if you change the code.
-    def get_solution_paths_dict_for_years(self, aoc_dir: Union[str, Path]) -> Dict[int, Dict[int, List[str]]]:
+    def get_solution_paths_dict_for_years(self) -> Dict[int, Dict[int, List[str]]]:
         """Returns a dictionary which maps years to days to a list of solution paths,
 
         E.g.: {2022: {1: [Path("2022/01/01.py"), Path("2022/01/01.kt")], ...}}
@@ -104,7 +100,7 @@ class AoCTiles:
     def find_recursive_solution_files(self, directory: Path) -> List[Path]:
         solution_paths = []
         for path in directory.rglob("*"):
-            if path.is_file() and path.suffix in self.extension_to_color:
+            if path.is_file() and path.suffix in extension_to_colors():
                 solution_paths.append(path)
         return solution_paths
 
@@ -140,6 +136,7 @@ class AoCTiles:
             if has_no_none_values and len(leaderboard) == 25:
                 print(f"Leaderboard for {year} is complete, no need to download.")
                 return leaderboard
+
         with open(self.config.session_cookie_path) as cookie_file:
             session_cookie = cookie_file.read().strip()
             assert (
@@ -147,7 +144,7 @@ class AoCTiles:
             ), f"Session cookie is not 128 characters long, make sure to remove the prefix!"
             data = requests.get(
                 PERSONAL_LEADERBOARD_URL.format(year=year),
-                headers={"User-Agent": "https://github.com/LiquidFun/adventofcode by Brutenis Gliwa"},
+                headers={"User-Agent": "https://github.com/LiquidFun/aoc_tiles by Brutenis Gliwa"},
                 cookies={"session": session_cookie},
             ).text
             leaderboard_path.parent.mkdir(exist_ok=True, parents=True)
@@ -155,113 +152,13 @@ class AoCTiles:
                 file.write(data)
         return self.parse_leaderboard(leaderboard_path)
 
-    def get_alternating_background(self, languages, both_parts_completed=True, *, stripe_width=20):
-        colors = [ImageColor.getrgb(self.extension_to_color[language]) for language in languages]
-        if len(colors) == 1:
-            colors.append(darker_color(colors[0]))
-        image = Image.new("RGB", (200, 100), self.config.not_completed_color)
-
-        def fill_with_colors(colors, fill_only_half):
-            for x in range(image.width):
-                for y in range(image.height):
-                    if fill_only_half and x / image.width + y / image.height > 1:
-                        continue
-                    image.load()[x, y] = colors[((x + y) // stripe_width) % len(colors)]
-
-        fill_with_colors([self.config.not_completed_color, darker_color(self.config.not_completed_color)], False)
-        if colors:
-            fill_with_colors(colors, not both_parts_completed)
-        return image
-
-    def format_time(self, time: str) -> str:
-        """Formats time as mm:ss if the time is below 1 hour, otherwise it returns >1h to a max of >24h
-
-        >>> format_time("00:58:32")
-        '58:32'
-        >>> format_time(">1h")
-        '  >1h'
-        """
-        time = time.replace("&gt;", ">")
-        if ">" in time:
-            formatted = time
-        else:
-            h, m, s = time.split(":")
-            formatted = f">{h}h" if int(h) >= 1 else f"{m:02}:{s:02}"
-        return f"{formatted:>5}"
-
-    def draw_star(self, drawer: ImageDraw, at: Tuple[int, int], size=9, color="#ffff0022", num_points=5):
-        """Draws a star at the given position"""
-        diff = math.pi * 2 / num_points / 2
-        points: List[Tuple[float, float]] = []
-        for angle in [diff * i - math.pi / 2 for i in range(num_points * 2)]:
-            factor = size if len(points) % 2 == 0 else size * 0.4
-            points.append((at[0] + math.cos(angle) * factor, at[1] + math.sin(angle) * factor))
-        drawer.polygon(points, fill=color)
-
-    def generate_day_tile_image(
-        self, day: str, year: str, languages: List[str], day_scores: DayScores | None, path: Path
-    ):
-        """Saves a graphic for a given day and year. Returns the path to it."""
-        image = self.get_alternating_background(languages, not (day_scores is None or day_scores.time2 is None))
-        drawer = ImageDraw(image)
-        text_kwargs = {"fill": self.config.text_color}
-
-        # Get all colors of the day, check if any one is similar to TEXT_COLOR
-        # If yes, add outline
-        for language in languages:
-            color = ImageColor.getrgb(self.extension_to_color[language])
-            if color_similarity(color, self.config.text_color, self.config.contrast_improvement_threshold):
-                if "outline" in self.config.contrast_improvement_type:
-                    text_kwargs["stroke_width"] = 1
-                    text_kwargs["stroke_fill"] = self.config.outline_color
-                if "dark" in self.config.contrast_improvement_type:
-                    text_kwargs["fill"] = self.config.not_completed_color
-                break
-
-        font_color = text_kwargs["fill"]
-
-        # === Left side ===
-        drawer.text((3, -5), "Day", align="left", font=main_font(20), **text_kwargs)
-        drawer.text((1, -10), str(day), align="center", font=main_font(75), **text_kwargs)
-        # Calculate font size based on number of characters, because it might overflow
-        lang_as_str = " ".join(languages)
-        lang_font_size = max(6, int(18 - max(0, len(lang_as_str) - 8) * 1.3))
-        drawer.text((0, 74), lang_as_str, align="left", font=secondary_font(lang_font_size), **text_kwargs)
-
-        # === Right side (P1 & P2) ===
-        for part in (1, 2):
-            y = 50 if part == 2 else 0
-            time, rank = getattr(day_scores, f"time{part}", None), getattr(day_scores, f"rank{part}", None)
-            if day_scores is not None and time is not None:
-                drawer.text((104, -5 + y), f"P{part} ", align="left", font=main_font(25), **text_kwargs)
-                if self.config.show_checkmark_instead_of_time_rank:
-                    drawer.line((160, 35 + y, 150, 25 + y), fill=font_color, width=2)
-                    drawer.line((160, 35 + y, 180, 15 + y), fill=font_color, width=2)
-                    continue
-                drawer.text((105, 25 + y), "time", align="right", font=secondary_font(10), **text_kwargs)
-                drawer.text((105, 35 + y), "rank", align="right", font=secondary_font(10), **text_kwargs)
-                drawer.text((143, 3 + y), self.format_time(time), align="right", font=secondary_font(18), **text_kwargs)
-                drawer.text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18), **text_kwargs)
-            else:
-                drawer.line((140, 15 + y, 160, 35 + y), fill=font_color, width=2)
-                drawer.line((140, 35 + y, 160, 15 + y), fill=font_color, width=2)
-
-        if day_scores is None and not languages:
-            drawer.line((15, 85, 85, 85), fill=self.config.text_color, width=2)
-
-        # === Divider lines ===
-        drawer.line((100, 5, 100, 95), fill=font_color, width=1)
-        drawer.line((105, 50, 195, 50), fill=font_color, width=1)
-
-        image.save(path)
-
     def handle_day(
-        self, day: int, year: int, solutions: List[str], html: HTML, day_scores: DayScores | None, needs_update: bool
+        self, day: int, year: int, solutions: List[str], html: HTML, day_scores: Optional[DayScores], needs_update: bool
     ):
         languages = []
         for solution in solutions:
             extension = "." + solution.split(".")[-1]
-            if extension in self.extension_to_color and extension not in languages:
+            if extension in extension_to_colors() and extension not in languages:
                 languages.append(extension)
         solution_link = solutions[0] if solutions else None
         if self.config:
@@ -270,7 +167,7 @@ class AoCTiles:
         day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}.png"
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
-            self.generate_day_tile_image(f"{day:02}", f"{year:04}", languages, day_scores, day_graphic_path)
+            self.tile_drawer.draw_tile(f"{day:02}", f"{year:04}", languages, day_scores, day_graphic_path)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         with html.tag("a", href=str(solution_link)):
             html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
@@ -331,12 +228,3 @@ class AoCTiles:
         for year, day_to_solutions_list in self.get_solution_paths_dict_for_years().items():
             print(f"=== Generating table for year {year} ===")
             self.handle_year(year, day_to_solutions_list)
-
-
-def main():
-    config = Config()
-    AoCTiles(config).run()
-
-
-if __name__ == "__main__":
-    main()

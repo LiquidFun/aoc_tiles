@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Literal, List, Tuple
 
 from PIL import ImageColor
 
@@ -13,15 +13,22 @@ class Config:
     aoc_tiles_dir: Path = field(init=False)
     image_dir: Path = field(init=False)
     cache_dir: Path = field(init=False)
+
+    what_to_show_on_right_parts: Literal["checkmark", "time", "loc"] = "checkmark"
+    count_as_solved_when: Literal["on_leaderboard", "file_exists", "either", "both"] = "file_exists"
+    language_sorting: List[str] = field(default_factory=list)
+    separate_files_for_both_parts: bool = False
     create_all_days: bool = False
-    show_checkmark_instead_of_time_rank: bool = True
+
     year_pattern: str = r"\d{4}"
     day_pattern: str = r"\d{1,2}"
+
     contrast_improvement_type: Literal["none", "outline", "dark"] = "outline"
-    outline_color: tuple = field(default=ImageColor.getrgb("#6C6A6A"))
     contrast_improvement_threshold: int = 30
-    not_completed_color: tuple = field(default=ImageColor.getrgb("#333333"))
-    text_color: tuple = field(default=ImageColor.getrgb("#FFFFFF"))
+    outline_color: Tuple = field(default=ImageColor.getrgb("#6C6A6A"))
+    not_completed_color: Tuple = field(default=ImageColor.getrgb("#333333"))
+    text_color: Tuple = field(default=ImageColor.getrgb("#FFFFFF"))
+
     tile_width_px: str = "161px"
     debug: bool = False
 

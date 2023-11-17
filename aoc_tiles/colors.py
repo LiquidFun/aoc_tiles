@@ -1,13 +1,15 @@
 # Location of yaml file where file extensions are mapped to colors
+from functools import lru_cache
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict
 
 import yaml
 
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yml"
 
 
-def get_extension_to_colors():
+@lru_cache
+def extension_to_colors():
     extension_to_color = {}
     with open(GITHUB_LANGUAGES_PATH) as file:
         github_languages = yaml.load(file, Loader=yaml.FullLoader)
