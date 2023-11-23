@@ -3,15 +3,15 @@ import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, Dict
+from typing import Union, Dict, List, Set
 
 import requests
 
 from aoc_tiles.config import Config
 
-
 # URL for the personal leaderboard (same for everyone)
 PERSONAL_LEADERBOARD_URL = "https://adventofcode.com/{year}/leaderboard/self"
+
 
 @dataclass
 class DayScores:

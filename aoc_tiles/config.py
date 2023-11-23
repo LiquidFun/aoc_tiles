@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, List, Tuple
+from typing import Literal, List, Tuple, Optional
 
 from PIL import ImageColor
 
@@ -20,8 +20,10 @@ class Config:
     separate_files_for_both_parts: bool = False
     create_all_days: bool = False
 
-    year_pattern: str = r"\d{4}"
-    day_pattern: str = r"\d{1,2}"
+    year_pattern: str = r'(?<!\d)(20[123]\d)(?!\d)'
+    day_pattern: str = r'(?<!\d)([012]?\d)(?!\d)'
+    overwrite_ignore_paths: List[Path] = field(default_factory=list)
+    overwrite_year: Optional[int] = None
 
     contrast_improvement_type: Literal["none", "outline", "dark"] = "outline"
     contrast_improvement_threshold: int = 30
@@ -34,8 +36,8 @@ class Config:
 
     def __post_init__(self):
         self.readme_path = self.aoc_dir / "README.md"
-        self.session_cookie_path = self.aoc_dir / "session.cookie"
         self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
+        self.session_cookie_path = self.aoc_tiles_dir / "session.cookie"
         self.image_dir = self.aoc_tiles_dir / "tiles"
         self.cache_dir = self.aoc_tiles_dir / "cache"
 

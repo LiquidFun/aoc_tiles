@@ -8,20 +8,20 @@ import yaml
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yaml"
 
 excludes = ["GCC Machine Description"]
+includes = {".ipynb": "#DA5B0B"}
 
 
 @lru_cache
-def extension_to_colors():
+def extension_to_colors() -> Dict[str, str]:
     extension_to_color = {}
     with open(GITHUB_LANGUAGES_PATH) as file:
         github_languages = yaml.load(file, Loader=yaml.FullLoader)
         for language, data in github_languages.items():
-            if "color" in data and "extensions" in data and data["type"] == "programming":
+            if "color" in data and "extensions" in data and data["type"] == "programming" and language not in excludes:
                 for extension in data["extensions"]:
                     extension_to_color[extension.lower()] = data["color"]
 
-    for exclude in excludes:
-        del extension_to_color[exclude]
+    extension_to_color.update(includes)
 
     return extension_to_color
 
