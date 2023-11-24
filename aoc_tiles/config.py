@@ -14,7 +14,7 @@ class Config:
     image_dir: Path = field(init=False)
     cache_dir: Path = field(init=False)
 
-    what_to_show_on_right_parts: Literal["checkmark", "time_and_rank", "loc"] = "time_and_rank"
+    what_to_show_on_right_parts: Literal["checkmark", "time_and_rank", "loc"] = "checkmark"
     count_as_solved_when: Literal["on_leaderboard", "file_exists", "either", "both"] = "file_exists"
     language_sorting: List[str] = field(default_factory=list)
     separate_files_for_both_parts: bool = False

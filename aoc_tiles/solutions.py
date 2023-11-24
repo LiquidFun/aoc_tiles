@@ -23,8 +23,8 @@ class SolutionFinder:
             if not years:
                 years.append(None)
             for year in years:
-                for day in days:
-                    day_to_solution_paths[year][int(day)].append(path)
+                if days:
+                    day_to_solution_paths[year][int(days[0])].append(path)
 
         self._ensure_sorting(day_to_solution_paths)
         pprint(day_to_solution_paths)

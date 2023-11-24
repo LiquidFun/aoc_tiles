@@ -84,7 +84,7 @@ class AoCTiles:
             if extension in extension_to_colors() and extension not in languages:
                 languages.append(extension)
         solution_link = solutions[0] if solutions else None
-        if self.config:
+        if self.config.debug:
             if day == 25:
                 languages = []
         day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}.png"

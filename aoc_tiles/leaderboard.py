@@ -34,14 +34,14 @@ def _parse_leaderboard(leaderboard_path: Path) -> Dict[int, DayScores]:
         matches = re.findall(rf"{start}(.*?){end}", html, re.DOTALL | re.MULTILINE)
         assert len(matches) == 1, f"Found {'no' if len(matches) == 0 else 'more than one'} leaderboard?!"
         table_rows = matches[0].strip().split("\n")
-        leaderboard = {}
+        day_to_scores = {}
         for line in table_rows:
             day, *scores = re.split(r"\s+", line.strip())
             # replace "-" with None to be able to handle the data later, like if no score existed for the day
             scores = [s if s != "-" else None for s in scores]
             assert len(scores) in (3, 6), f"Number scores for {day=} ({scores}) are not 3 or 6."
-            leaderboard[int(day)] = DayScores(*scores)
-        return leaderboard
+            day_to_scores[int(day)] = DayScores(*scores)
+        return day_to_scores
 
 
 def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
@@ -52,8 +52,8 @@ def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
         if less_than_30mins:
             print(f"Leaderboard for {year} is younger than 30 minutes, skipping download in order to avoid DDOS.")
             return leaderboard
-        has_no_none_values = all(itertools.chain(map(list, leaderboard.values())))
-        if has_no_none_values and len(leaderboard) == 25:
+        has_no_none_values = all(itertools.chain(map(list, leaderboard.day_to_scores.values())))
+        if has_no_none_values and len(leaderboard.day_to_scores) == 25:
             print(f"Leaderboard for {year} is complete, no need to download.")
             return leaderboard
 
