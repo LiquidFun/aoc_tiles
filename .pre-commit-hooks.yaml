@@ -1,0 +1,4 @@
+- id: aoc-tiles
+  name: AOC Tiles
+  entry: aoctiles
+  language: python
