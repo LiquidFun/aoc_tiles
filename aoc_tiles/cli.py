@@ -1,13 +1,13 @@
 import rich.traceback
 
 from aoc_tiles.config import Config
-from aoc_tiles.tiles import AoCTiles
+from aoc_tiles.make_tiles import TileMaker
 
 
 def main():
     rich.traceback.install()
     config = Config()
-    AoCTiles(config).run()
+    TileMaker(config).make_tiles()
 
 
 if __name__ == "__main__":

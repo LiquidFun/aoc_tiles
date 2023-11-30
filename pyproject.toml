@@ -8,8 +8,7 @@ readme = "README.md"
 
 [tool.poetry.scripts]
 aoc-tiles = 'aoc_tiles.cli:main'
-solution = 'aoc_tiles.solutions:main'
-tiles = 'aoc_tiles.make_tiles:main'
+aoctiles = 'aoc_tiles.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.8"

@@ -1,5 +1,7 @@
+import concurrent
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from pprint import pprint
@@ -106,6 +108,7 @@ class TileMaker:
                 day_to_solutions[day] = []
 
     def handle_year(self, year: int, year_data: YearData):
+        print(f"=== Generating table for year {year} ===")
         leaderboard = year_data.day_to_scores
         day_to_solutions = year_data.day_to_paths
         html = HTML()
@@ -152,9 +155,10 @@ class TileMaker:
     def make_tiles(self):
         print("Running AoC-Tiles")
         solve_data = self.compose_solve_data()
-        for year, data in solve_data.year_to_data.items():
-            print(f"=== Generating table for year {year} ===")
-            self.handle_year(year, data)
+        with ThreadPoolExecutor() as executor:  # Use ThreadPoolExecutor or ProcessPoolExecutor
+            for year, data in solve_data.year_to_data.items():
+                executor.submit(self.handle_year, year, data)
+
 
         # pprint(solve_data)
 
