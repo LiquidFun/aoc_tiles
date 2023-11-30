@@ -27,7 +27,7 @@ class SolutionFinder:
                     day_to_solution_paths[year][int(days[0])].append(path)
 
         self._ensure_sorting(day_to_solution_paths)
-        pprint(day_to_solution_paths)
+        # pprint(day_to_solution_paths)
         return day_to_solution_paths
 
     def _ensure_sorting(self, solution_paths_dict: Dict[int, Dict[int, List[str]]]) -> Dict[int, Dict[int, List[str]]]:

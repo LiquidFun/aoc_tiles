@@ -20,61 +20,6 @@ class AoCTiles:
         self.config = config
         self.tile_drawer = TileDrawer(self.config)
 
-    # You can change this code entirely, or just change patterns above. You get more control if you change the code.
-    def get_solution_paths_dict_for_years(self) -> Dict[int, Dict[int, List[str]]]:
-        """Returns a dictionary which maps years to days to a list of solution paths,
-
-        E.g.: {2022: {1: [Path("2022/01/01.py"), Path("2022/01/01.kt")], ...}}
-
-        This functions gives you more control of which solutions should be shown in the tiles. For example, you
-        can filter by extension, or only show a single solution, or show tiles for days that have been completed
-        but do not have a solution.
-
-        These can also be links to external solutions, e.g. if you want to show a solution from a different repository.
-        (Untested however)
-
-        """
-        solution_paths_dict: Dict[int, Dict[int, List[str]]] = {}
-
-        def find_first_number(string: str) -> int:
-            return int(re.findall(r"\d+", string)[0])
-
-        # If you use a new repo for years you might just remove this if, and assign the year manually
-        matching_paths = self.get_paths_matching_regex(self.config.aoc_dir, self.config.year_pattern)
-        for year_dir in sorted(matching_paths, reverse=True):
-            year = find_first_number(year_dir.name)
-            solution_paths_dict[year] = {}
-            # If you have a deep structure then you can adjust the year dir as well:
-            # year_dir = year_dir / "src/main/kotlin/com/example/aoc"
-            for day_dir in self.get_paths_matching_regex(year_dir, self.config.day_pattern):
-                day = find_first_number(day_dir.name)
-                solutions = sorted(self.find_recursive_solution_files(day_dir))
-
-                # To filter by extension:
-                # solutions = [s for s in solutions if s.suffix == ".py"]
-
-                # To only show a single solution:
-                # solutions = [solutions[0]]
-
-                # To show tiles for days that have been completed but do not have a solution:
-                # if len(solutions) == 0:
-                #     solutions = [Path("dummy.kt")]
-
-                solutions = [solution.relative_to(self.config.aoc_dir) for solution in solutions]
-
-                solution_paths_dict[year][day] = [s.as_posix() for s in solutions]
-        return solution_paths_dict
-
-    def get_paths_matching_regex(self, path: Path, pattern: str):
-        return sorted([p for p in path.iterdir() if re.fullmatch(pattern, p.name)])
-
-    def find_recursive_solution_files(self, directory: Path) -> List[Path]:
-        solution_paths = []
-        for path in directory.rglob("*"):
-            if path.is_file() and path.suffix in extension_to_colors():
-                solution_paths.append(path)
-        return solution_paths
-
     def handle_day(
         self, day: int, year: int, solutions: List[str], html: HTML, day_scores: Optional[DayScores], needs_update: bool
     ):
