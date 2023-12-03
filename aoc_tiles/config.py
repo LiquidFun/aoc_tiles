@@ -1,45 +1,100 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, List, Tuple, Optional
+from typing import Literal, List, Tuple, Optional, Union
 
 from PIL import ImageColor
 
 
 @dataclass
 class Config:
-    aoc_dir: Path = Path("./")
-    readme_path: Path = field(init=False)
-    session_cookie_path: Path = field(init=False)
-    aoc_tiles_dir: Path = field(init=False)
-    image_dir: Path = field(init=False)
-    cache_dir: Path = field(init=False)
+    aoc_dir: Union[str, Path] = field(default="./", metadata={"help": "Path to the AoC directory."})
+    readme_path: Union[str, Path] = field(init=False)
+    session_cookie_path: Union[str, Path] = field(init=False)
+    aoc_tiles_dir: Union[str, Path] = field(init=False)
+    image_dir: Union[str, Path] = field(init=False)
+    cache_dir: Union[str, Path] = field(init=False)
 
-    what_to_show_on_right_parts: Literal["checkmark", "time_and_rank", "loc"] = "checkmark"
-    count_as_solved_when: Literal["on_leaderboard", "file_exists", "either", "both"] = "file_exists"
-    language_sorting: List[str] = field(default_factory=list)
-    separate_files_for_both_parts: bool = False
-    create_all_days: bool = False
+    what_to_show_on_right_side: Literal["checkmark", "time_and_rank", "loc"] = field(
+        default="checkmark", metadata={"help": "What information to display on the right side of each tile."}
+    )
+    count_as_solved_when: Literal["on_leaderboard", "file_exists", "either", "both"] = field(
+        default="file_exists",
+        metadata={
+            "help": "Condition to count a task as solved. Note that 'on_leaderboard', 'either' and 'both' require a "
+            "session cookie."
+        },
+    )
+    language_sorting: List[str] = field(
+        default_factory=list,
+        metadata={
+            "help": "Preferred language extensions order for sorting. For example 'py,rs,js' will make Python "
+            "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
+        },
+    )
+    # separate_files_for_both_parts: bool = field(
+    #     default=False, metadata={"help": "Whether you use separate files for both parts of a task."}
+    # )
+    create_all_days: bool = field(default=False, metadata={"help": "Whether to create entries for all days upfront."})
 
-    year_pattern: str = r'(?<!\d)(20[123]\d)(?!\d)'
-    day_pattern: str = r'(?<!\d)([012]?\d)(?!\d)'
-    overwrite_ignore_paths: List[Path] = field(default_factory=list)
-    overwrite_year: Optional[int] = None
+    year_pattern: str = field(
+        default=r"(?<!\d)(20[123]\d)(?!\d)",
+        metadata={
+            "help": "Regex pattern for matching years. This extracts the first group as the year and parses it as an "
+            "integer. Make sure that other numbers are not matched by this pattern! For example, "
+            "using negative lookbehind and lookaheads is encouraged to avoid matching longer numbers!"
+        },
+    )
+    day_pattern: str = field(
+        default=r"(?<!\d)([012]?\d)(?!\d)", metadata={"help": "Regex pattern for matching days. Same as year_pattern."}
+    )
+    overwrite_ignore_paths: List[Union[str, Path]] = field(
+        default_factory=list, metadata={"help": "A list of paths to ignore when looking for solutions"}
+    )
+    overwrite_year: Optional[int] = field(
+        default=None,
+        metadata={
+            "help": "If your repository only contains a single year and it cannot be parsed from the path, then you "
+            "should use this to overwrite the year. Every solution is presumed to be for this year."
+        },
+    )
 
-    contrast_improvement_type: Literal["none", "outline", "dark"] = "outline"
-    contrast_improvement_threshold: int = 30
-    outline_color: Tuple = field(default=ImageColor.getrgb("#6C6A6A"))
-    not_completed_color: Tuple = field(default=ImageColor.getrgb("#333333"))
-    text_color: Tuple = field(default=ImageColor.getrgb("#FFFFFF"))
+    contrast_improvement_type: Literal["none", "outline", "dark"] = field(
+        default="outline",
+        metadata={
+            "help": "Some languages have very light colors and are hard to see with a white font. Here you can choose "
+            "how the text color changes when the background is too light. 'dark' makes the font dark, "
+            "'outline' adds a black outline."
+        },
+    )
+    contrast_improvement_threshold: int = field(
+        default=30, metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."}
+    )
+    outline_color: Union[str, Tuple] = field(default="#6C6A6A", metadata={"help": "Color used for outlining elements."})
+    not_completed_color: Union[str, Tuple] = field(default="#333333", metadata={"help": "Color to signify incomplete tasks."})
+    text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color."})
 
-    tile_width_px: str = "161px"
-    debug: bool = False
+    tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels."})
+    debug: bool = field(default=False, metadata={"help": "Enable debug mode."})
 
     def __post_init__(self):
-        self.readme_path = self.aoc_dir / "README.md"
-        self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
-        self.session_cookie_path = self.aoc_tiles_dir / "session.cookie"
-        self.image_dir = self.aoc_tiles_dir / "tiles"
-        self.cache_dir = self.aoc_tiles_dir / "cache"
+        if not hasattr(self, "readme_path"):
+            self.readme_path = self.aoc_dir / "README.md"
+
+        if not hasattr(self, "aoc_tiles_dir"):
+            self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
+
+        if not hasattr(self, "session_cookie_path"):
+            self.session_cookie_path = self.aoc_tiles_dir / "session.cookie"
+
+        if not hasattr(self, "image_dir"):
+            self.image_dir = self.aoc_tiles_dir / "tiles"
+
+        if not hasattr(self, "cache_dir"):
+            self.cache_dir = self.aoc_tiles_dir / "cache"
+
+        self.outline_color = ImageColor.getrgb(self.outline_color)
+        self.not_completed_color = ImageColor.getrgb(self.not_completed_color)
+        self.text_color = ImageColor.getrgb(self.text_color)
 
 
 # class Config:

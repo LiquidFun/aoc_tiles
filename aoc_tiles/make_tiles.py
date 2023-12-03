@@ -47,7 +47,7 @@ class TileMaker:
 
     def compose_solve_data(self) -> SolveData:
         is_solution_paths_needed = (
-                self.config.what_to_show_on_right_parts in ['loc']
+                self.config.what_to_show_on_right_side in ['loc']
                 or self.config.count_as_solved_when in ['file_exists', 'both', "either"]
         )
         solution_paths_by_year = {}
@@ -62,7 +62,7 @@ class TileMaker:
             years = [self.config.overwrite_year]
 
         is_leaderboard_needed = (
-                self.config.what_to_show_on_right_parts in ['time_and_rank']
+                self.config.what_to_show_on_right_side in ['time_and_rank']
                 or self.config.count_as_solved_when in ['on_leaderboard', 'both', "either"]
         )
 
