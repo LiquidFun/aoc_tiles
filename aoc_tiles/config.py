@@ -7,7 +7,7 @@ from PIL import ImageColor
 
 @dataclass
 class Config:
-    aoc_dir: Union[str, Path] = field(default="./", metadata={"help": "Path to the AoC directory."})
+    aoc_dir: Union[str, Path] = field(default="./", metadata={"help": "Path to the AoC directory.", "type": str})
     readme_path: Union[str, Path] = field(init=False)
     session_cookie_path: Union[str, Path] = field(init=False)
     aoc_tiles_dir: Union[str, Path] = field(init=False)
@@ -69,14 +69,16 @@ class Config:
     contrast_improvement_threshold: int = field(
         default=30, metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."}
     )
-    outline_color: Union[str, Tuple] = field(default="#6C6A6A", metadata={"help": "Color used for outlining elements."})
-    not_completed_color: Union[str, Tuple] = field(default="#333333", metadata={"help": "Color to signify incomplete tasks."})
-    text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color."})
+    outline_color: Union[str, Tuple] = field(default="#6C6A6A", metadata={"help": "Color used for outlining elements.", "type": str})
+    not_completed_color: Union[str, Tuple] = field(default="#333333", metadata={"help": "Color to signify incomplete tasks.", "type": str})
+    text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
 
     tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels."})
     debug: bool = field(default=False, metadata={"help": "Enable debug mode."})
 
     def __post_init__(self):
+        self.aoc_dir = Path(self.aoc_dir)
+
         if not hasattr(self, "readme_path"):
             self.readme_path = self.aoc_dir / "README.md"
 
