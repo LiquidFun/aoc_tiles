@@ -1,7 +1,7 @@
 import itertools
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Union, Dict, List, Set
 
@@ -52,8 +52,8 @@ def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
         if less_than_30mins:
             print(f"Leaderboard for {year} is younger than 30 minutes, skipping download in order to avoid DDOS.")
             return leaderboard
-        has_no_none_values = all(itertools.chain(map(list, leaderboard.day_to_scores.values())))
-        if has_no_none_values and len(leaderboard.day_to_scores) == 25:
+        has_no_none_values = all(itertools.chain(map(fields, leaderboard.values())))
+        if has_no_none_values and len(leaderboard) == 25:
             print(f"Leaderboard for {year} is complete, no need to download.")
             return leaderboard
 

@@ -117,7 +117,7 @@ class TileMaker:
                 (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
             )
             html.push(f"{year} - {stars} ⭐")
-        max_day = 25 if self.config.create_all_days else max(*day_to_solutions, *leaderboard)
+        max_day = 25 if self.config.create_all_days else max(year_data.is_day_solved)
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
 
         # completed_solutions = dict()
