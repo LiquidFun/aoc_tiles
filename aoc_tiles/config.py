@@ -31,6 +31,7 @@ class Config:
             "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
         },
     )
+    only_use_git_files: bool = field(default=True, metadata={"help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
     # separate_files_for_both_parts: bool = field(
     #     default=False, metadata={"help": "Whether you use separate files for both parts of a task."}
     # )
@@ -101,6 +102,10 @@ class Config:
         self.outline_color = ImageColor.getrgb(self.outline_color)
         self.not_completed_color = ImageColor.getrgb(self.not_completed_color)
         self.text_color = ImageColor.getrgb(self.text_color)
+
+        for i, suffix in enumerate(self.language_sorting):
+            if not suffix.startswith("."):
+                self.language_sorting[i] = "." + suffix
 
 
 # class Config:
