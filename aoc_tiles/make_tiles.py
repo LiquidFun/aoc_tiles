@@ -154,7 +154,6 @@ class TileMaker:
                 f"README.md! Make sure to add them to the README at {self.config.readme_path}."
             )
             pattern = re.compile(rf"{begin}.*{end}", re.DOTALL | re.MULTILINE)
-            print(str(html))
             new_text = pattern.sub(f"{begin}\n{html}\n{end}", text)
 
         with open(self.config.readme_path, "w", encoding="utf-8") as file:
