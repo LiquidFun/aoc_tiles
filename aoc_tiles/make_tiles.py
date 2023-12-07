@@ -126,7 +126,7 @@ class TileMaker:
         #     with open(completed_cache_path, "r") as file:
         #         completed_solutions = {int(day): solutions for day, solutions in json.load(file).items()}
 
-        for day in range(1, 26):
+        for day in range(1, max_day+1):
             solutions = day_to_solutions.get(day, [])
             # self.handle_day(day, year, solutions, html, leaderboard.get(day), completed_solutions.get(day) != solutions)
             is_solved = day in year_data.is_day_solved
