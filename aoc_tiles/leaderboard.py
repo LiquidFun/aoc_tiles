@@ -59,9 +59,7 @@ def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
 
     with open(config.session_cookie_path) as cookie_file:
         session_cookie = cookie_file.read().strip()
-        assert (
-                len(session_cookie) == 128
-        ), f"Session cookie is not 128 characters long, make sure to remove the prefix!"
+        assert len(session_cookie) == 128, f"Session cookie is not 128 characters long, make sure to remove the prefix!"
         data = requests.get(
             PERSONAL_LEADERBOARD_URL.format(year=year),
             headers={"User-Agent": "https://github.com/LiquidFun/aoc_tiles by Brutenis Gliwa"},

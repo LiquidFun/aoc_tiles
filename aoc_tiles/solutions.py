@@ -9,7 +9,6 @@ from aoc_tiles.config import Config
 
 
 class SolutionFinder:
-
     def __init__(self, config: Config):
         self.config = config
 
@@ -35,7 +34,7 @@ class SolutionFinder:
             suffix = path.suffix.lower()
             if suffix in self.config.language_sorting:
                 return f"{self.config.language_sorting.index(suffix):05}_{suffix}"
-            return '99999_' + suffix
+            return "99999_" + suffix
 
         for year in solution_paths_dict:
             for day in solution_paths_dict[year]:
@@ -54,5 +53,5 @@ def main():
     SolutionFinder(Config()).get_solution_paths_by_year(Path())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

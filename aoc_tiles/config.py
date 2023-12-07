@@ -69,8 +69,12 @@ class Config:
     contrast_improvement_threshold: int = field(
         default=30, metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."}
     )
-    outline_color: Union[str, Tuple] = field(default="#6C6A6A", metadata={"help": "Color used for outlining elements.", "type": str})
-    not_completed_color: Union[str, Tuple] = field(default="#333333", metadata={"help": "Color to signify incomplete tasks.", "type": str})
+    outline_color: Union[str, Tuple] = field(
+        default="#6C6A6A", metadata={"help": "Color used for outlining elements.", "type": str}
+    )
+    not_completed_color: Union[str, Tuple] = field(
+        default="#333333", metadata={"help": "Color to signify incomplete tasks.", "type": str}
+    )
     text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
 
     tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels."})

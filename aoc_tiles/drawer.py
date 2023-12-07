@@ -33,7 +33,9 @@ class TileDrawer:
     def __init__(self, config: Config):
         self.config = config
 
-    def draw_tile(self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, is_solved: bool):
+    def draw_tile(
+        self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, is_solved: bool
+    ):
         """Saves a graphic for a given day and year. Returns the path to it."""
         image = self.get_alternating_background(languages, is_solved)
         drawer = ImageDraw(image)

@@ -18,11 +18,13 @@ from aoc_tiles.solutions import SolutionFinder
 README_TILES_BEGIN = "<!-- AOC TILES BEGIN -->"
 README_TILES_END = "<!-- AOC TILES END -->"
 
+
 @dataclass
 class YearData:
     day_to_scores: Dict[int, DayScores]
     day_to_paths: Dict[int, List[Path]]
     is_day_solved: Set[int]
+
 
 @dataclass
 class SolveData:
@@ -44,12 +46,10 @@ class TileMaker:
 
         return is_solved_func(solved, solution)
 
-
     def compose_solve_data(self) -> SolveData:
-        is_solution_paths_needed = (
-                self.config.what_to_show_on_right_side in ['loc']
-                or self.config.count_as_solved_when in ['file_exists', 'both', "either"]
-        )
+        is_solution_paths_needed = self.config.what_to_show_on_right_side in [
+            "loc"
+        ] or self.config.count_as_solved_when in ["file_exists", "both", "either"]
         solution_paths_by_year = {}
         years = []
         if is_solution_paths_needed:
@@ -61,10 +61,9 @@ class TileMaker:
         if self.config.overwrite_year is not None:
             years = [self.config.overwrite_year]
 
-        is_leaderboard_needed = (
-                self.config.what_to_show_on_right_side in ['time_and_rank']
-                or self.config.count_as_solved_when in ['on_leaderboard', 'both', "either"]
-        )
+        is_leaderboard_needed = self.config.what_to_show_on_right_side in [
+            "time_and_rank"
+        ] or self.config.count_as_solved_when in ["on_leaderboard", "both", "either"]
 
         solve_data = SolveData({})
 
@@ -84,7 +83,14 @@ class TileMaker:
         return solve_data
 
     def handle_day(
-            self, day: int, year: int, solutions: List[Path], html: HTML, day_scores: Optional[DayScores], needs_update: bool, is_solved: bool
+        self,
+        day: int,
+        year: int,
+        solutions: List[Path],
+        html: HTML,
+        day_scores: Optional[DayScores],
+        needs_update: bool,
+        is_solved: bool,
     ):
         languages = []
         for solution in solutions:
@@ -126,7 +132,7 @@ class TileMaker:
         #     with open(completed_cache_path, "r") as file:
         #         completed_solutions = {int(day): solutions for day, solutions in json.load(file).items()}
 
-        for day in range(1, max_day+1):
+        for day in range(1, max_day + 1):
             solutions = day_to_solutions.get(day, [])
             # self.handle_day(day, year, solutions, html, leaderboard.get(day), completed_solutions.get(day) != solutions)
             is_solved = day in year_data.is_day_solved
@@ -159,9 +165,7 @@ class TileMaker:
             for year, data in solve_data.year_to_data.items():
                 executor.submit(self.handle_year, year, data)
 
-
         # pprint(solve_data)
-
 
 
 def main():
