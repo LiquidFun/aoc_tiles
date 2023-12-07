@@ -119,9 +119,10 @@ class TileMaker:
         day_to_solutions = year_data.day_to_paths
         html = HTML()
         with html.tag("h1", align="center"):
-            stars = sum(
-                (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
-            )
+            stars = len(year_data.is_day_solved) * 2
+            # stars = sum(
+            #     (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
+            # )
             html.push(f"{year} - {stars} ⭐")
         max_day = 25 if self.config.create_all_days else max(year_data.is_day_solved)
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
@@ -153,6 +154,7 @@ class TileMaker:
                 f"README.md! Make sure to add them to the README at {self.config.readme_path}."
             )
             pattern = re.compile(rf"{begin}.*{end}", re.DOTALL | re.MULTILINE)
+            print(str(html))
             new_text = pattern.sub(f"{begin}\n{html}\n{end}", text)
 
         with open(self.config.readme_path, "w", encoding="utf-8") as file:
@@ -161,8 +163,8 @@ class TileMaker:
     def make_tiles(self):
         print("Running AoC-Tiles")
         solve_data = self.compose_solve_data()
-        with ThreadPoolExecutor() as executor:  # Use ThreadPoolExecutor or ProcessPoolExecutor
-            for year, data in solve_data.year_to_data.items():
+        with ThreadPoolExecutor(max_workers=1) as executor:  # Use ThreadPoolExecutor or ProcessPoolExecutor
+            for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
                 executor.submit(self.handle_year, year, data)
 
         # pprint(solve_data)
