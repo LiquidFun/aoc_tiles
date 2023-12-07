@@ -41,7 +41,7 @@ def type_for_field(field):
     return field.type
 
 
-def cli_parser(datacls):
+def cli_parse_config(datacls):
     parser = argparse.ArgumentParser(description="CLI for Config dataclass")
     for field in fields(datacls):
         if field.init:
@@ -69,17 +69,20 @@ def cli_parser(datacls):
             parser.add_argument(f'--{field.name.replace("_", "-")}', **kwargs)
 
     parser.add_argument(
-        "ignore",
+        "are ignored",
         nargs="*",
-        help="Any non-keyword arguments are ignored. This is because pre-commit passes all arguments to the hook, and we don't want to fail the hook because of that.",
+        help="Any non-keyword arguments are ignored. This is because pre-commit passes all arguments to the hook,"
+             " and we don't want to fail the hook because of that.",
     )
-    return parser.parse_args()
+
+    args = vars(parser.parse_args())
+    del args["are ignored"]
+    return datacls(**args)
 
 
 def main():
     rich.traceback.install()
-    args = cli_parser(Config)
-    config = Config(**vars(args))
+    config = cli_parse_config(Config)
     TileMaker(config).make_tiles()
 
 
