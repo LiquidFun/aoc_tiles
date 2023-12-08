@@ -34,10 +34,10 @@ class TileDrawer:
         self.config = config
 
     def draw_tile(
-        self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, is_solved: bool
+            self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, stars: int
     ):
         """Saves a graphic for a given day and year. Returns the path to it."""
-        image = self.get_alternating_background(languages, is_solved)
+        image = self.get_alternating_background(languages, stars == 2)
         drawer = ImageDraw(image)
         text_kwargs = {"fill": self.config.text_color}
 
@@ -71,7 +71,7 @@ class TileDrawer:
             time = getattr(day_scores, f"time{part}", None)
             rank = getattr(day_scores, f"rank{part}", None)
 
-            if is_solved:
+            if stars >= part:
                 draw_text((104, -5 + y), f"P{part} ", align="left", font=main_font(25))
 
                 if self.config.what_to_show_on_right_side == "checkmark":

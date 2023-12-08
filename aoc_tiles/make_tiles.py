@@ -25,7 +25,7 @@ README_TILES_END = "<!-- AOC TILES END -->"
 class YearData:
     day_to_scores: Dict[int, DayScores]
     day_to_paths: Dict[int, List[Path]]
-    is_day_solved: Set[int]
+    day_to_stars: Dict[int, int]
 
 
 @dataclass
@@ -38,15 +38,15 @@ class TileMaker:
         self.config = config
         self.tile_drawer = TileDrawer(config)
 
-    def _is_solved(self, solved, solution):
-        is_solved_func = {
-            "on_leaderboard": lambda a, b: bool(a),
-            "file_exists": lambda a, b: bool(b),
-            "either": lambda a, b: bool(a or b),
-            "both": lambda a, b: bool(a and b),
+    def _get_stars(self, solved: DayScores, solution: List[Path]):
+        on_leaderboard = 0 if solved is None else bool(solved.rank1) + bool(solved.rank2)
+        file_exists = 0 if solution is None else 2
+        return {
+            "on_leaderboard": on_leaderboard,
+            "file_exists": file_exists,
+            "either": max(on_leaderboard, file_exists),
+            "both": min(on_leaderboard, file_exists),
         }[self.config.count_as_solved_when]
-
-        return is_solved_func(solved, solution)
 
     def compose_solve_data(self) -> SolveData:
         is_solution_paths_needed = self.config.what_to_show_on_right_side in [
@@ -75,13 +75,13 @@ class TileMaker:
             if is_leaderboard_needed:
                 day_to_scores = request_leaderboard(year, self.config)
 
-            day_is_solved = set()
+            day_to_stars = {}
 
             for day in range(1, 26):
-                if self._is_solved(day_to_scores.get(day), day_to_solution.get(day)):
-                    day_is_solved.add(day)
+                stars = self._get_stars(day_to_scores.get(day), day_to_solution.get(day))
+                day_to_stars[day] = stars
 
-            solve_data.year_to_data[year] = YearData(day_to_scores, day_to_solution, day_is_solved)
+            solve_data.year_to_data[year] = YearData(day_to_scores, day_to_solution, day_to_stars)
         return solve_data
 
     def handle_day(
@@ -92,7 +92,7 @@ class TileMaker:
         html: HTML,
         day_scores: Optional[DayScores],
         needs_update: bool,
-        is_solved: bool,
+        stars: int,
     ):
         logger.debug("day={} year={} solutions={}", day, year, solutions)
         languages = []
@@ -104,7 +104,7 @@ class TileMaker:
         day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}.png"
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
-            self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, is_solved=is_solved)
+            self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, stars=stars)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         with html.tag("a", href=str(solution_link)):
             html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
@@ -122,12 +122,13 @@ class TileMaker:
         day_to_solutions = year_data.day_to_paths
         html = HTML()
         with html.tag("h1", align="center"):
-            stars = len(year_data.is_day_solved) * 2
+            stars = sum(year_data.day_to_stars.values())
             # stars = sum(
             #     (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
             # )
             html.push(f"{year} - {stars} ⭐")
-        max_day = 25 if self.config.create_all_days else max(year_data.is_day_solved)
+        max_solved_day = max(day for day, stars in year_data.day_to_stars.items() if stars > 0)
+        max_day = 25 if self.config.create_all_days else max_solved_day
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
 
         # completed_solutions = dict()
@@ -138,9 +139,8 @@ class TileMaker:
 
         for day in range(1, max_day + 1):
             solutions = day_to_solutions.get(day, [])
-            # self.handle_day(day, year, solutions, html, leaderboard.get(day), completed_solutions.get(day) != solutions)
-            is_solved = day in year_data.is_day_solved
-            self.handle_day(day, year, solutions, html, leaderboard.get(day), True, is_solved=is_solved)
+            stars = year_data.day_to_stars[day]
+            self.handle_day(day, year, solutions, html, leaderboard.get(day), True, stars=stars)
 
         # with open(completed_cache_path, "w") as file:
         #     completed_days = [day for day, scores in leaderboard.items() if scores.time2 is not None]
