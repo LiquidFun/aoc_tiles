@@ -19,17 +19,21 @@ class SolutionFinder:
 
         if self.config.session_cookie_path.exists():
             msg = f"This is a security risk!" \
-                  f" Ensure that the {self.config.session_cookie_path} file is not tracked by git!"
+                  f" Ensure that the {self.config.session_cookie_path} "
             if self.is_file_tracked_by_git(self.config.session_cookie_path):
-                print(f"[ERROR] Session cookie file is tracked by git. {msg} Aborting!")
+                msg += "file is not tracked by git!"
+                exit(f"[ERROR] Session cookie file is tracked by git. {msg} Aborting!")
             elif not self.is_file_git_ignored(self.config.session_cookie_path):
+                msg += " is in your .gitignore!"
                 print(f"[WARNING] Session cookie file is not git ignored. {msg}")
 
     def get_solution_paths_by_year(self, aoc_dir: Path) -> Dict[Optional[int], Dict[int, List[Path]]]:
         day_to_solution_paths = defaultdict(lambda: defaultdict(list))
         year_pattern = re.compile(self.config.year_pattern)
         day_pattern = re.compile(self.config.day_pattern)
-        for path in sorted(self._find_recursive_solution_files(aoc_dir)):
+        candidate_paths = sorted(self._find_recursive_solution_files(aoc_dir))
+        logger.debug("Candidate paths: {}", candidate_paths)
+        for path in candidate_paths:
             years = year_pattern.findall(str(path))
             days = day_pattern.findall(str(path))
             if not years:
@@ -58,8 +62,8 @@ class SolutionFinder:
         solution_paths = []
         for path in directory.rglob("*"):
             # Either we don't care about git ignores, or we care and then check if file is ignored
-            not_git_ignored = not self.config.only_use_git_files
-            not_git_ignored |= self.config.only_use_git_files and not self.is_file_tracked_by_git(path)
+            not_git_ignored = not self.config.only_use_solutions_in_git
+            not_git_ignored |= self.config.only_use_solutions_in_git and self.is_file_tracked_by_git(path)
             if path.is_file() and path.suffix in extension_to_colors() and not_git_ignored:
                 solution_paths.append(path)
         return solution_paths

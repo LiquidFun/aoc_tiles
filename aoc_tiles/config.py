@@ -1,8 +1,10 @@
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, List, Tuple, Optional, Union
 
 from PIL import ImageColor
+from loguru import logger
 
 
 @dataclass
@@ -16,14 +18,19 @@ class Config:
 
     verbose: bool = field(default=False, metadata={"help": "Whether to print debug information."})
 
-    what_to_show_on_right_side: Literal["checkmark", "time_and_rank", "loc"] = field(
-        default="checkmark", metadata={"help": "What information to display on the right side of each tile."}
+    what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
+        default="auto", metadata={
+            "help": "What information to display on the right side of each tile. "
+                    "'checkmark' only displays a checkmark for each part if the day is solved. "
+                    "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
+                    "'loc' displays the number of lines of code of the solution (not implemented. "
+                    "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."}
     )
-    count_as_solved_when: Literal["on_leaderboard", "file_exists", "either", "both"] = field(
-        default="file_exists",
+    count_as_solved_when: Literal["auto", "on_leaderboard", "file_exists", "either", "both"] = field(
+        default="auto",
         metadata={
             "help": "Condition to count a task as solved. Note that 'on_leaderboard', 'either' and 'both' require a "
-                    "session cookie."
+                    "session cookie. 'auto' will use 'both' if session.cookie exists, otherwise 'file_exists'."
         },
     )
     language_sorting: List[str] = field(
@@ -33,9 +40,12 @@ class Config:
                     "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
         },
     )
-    only_use_git_files: bool = field(default=True, metadata={
-        "help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
     create_all_days: bool = field(default=False, metadata={"help": "Whether to create entries for all days upfront."})
+
+    auto_add_tiles_to_git: bool = field(default=False, metadata={
+        "help": "Whether to automatically add the tile images to git staging."})
+    only_use_solutions_in_git: bool = field(default=True, metadata={
+        "help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
 
     year_pattern: str = field(
         default=r"(?<!\d)(20[123]\d)(?!\d)",
@@ -101,6 +111,12 @@ class Config:
         if not hasattr(self, "cache_dir"):
             self.cache_dir = self.aoc_tiles_dir / "cache"
 
+        if self.count_as_solved_when == "auto":
+            self.count_as_solved_when = "both" if self.session_cookie_path.exists() else "file_exists"
+
+        if self.what_to_show_on_right_side == "auto":
+            self.what_to_show_on_right_side = "time_and_rank" if self.session_cookie_path.exists() else "checkmark"
+
         self.outline_color = ImageColor.getrgb(self.outline_color)
         self.not_completed_color = ImageColor.getrgb(self.not_completed_color)
         self.text_color = ImageColor.getrgb(self.text_color)
@@ -109,58 +125,8 @@ class Config:
             if not suffix.startswith("."):
                 self.language_sorting[i] = "." + suffix
 
-# class Config:
-#     def __init__(self):
-#         # This results in the parent directory of the script directory, the year directories should be here
-#         self.aoc_dir = Path("./")
-#
-#         # Path to the README file where the tiles should be added
-#         self.readme_path = self.aoc_dir / "README.md"
-#
-#         # Path to the cookie session file
-#         self.session_cookie_path = self.aoc_dir / "session.cookie"
-#
-#         # The directory where all aoc_tiles relevant files will be stored
-#         self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
-#
-#         # The directory where the image files for the tiles are stored. This should be committed to git.
-#         # Year directories are created in this directory, then each day is saved as 01.png, 02.png, etc.
-#         self.image_dir = self.aoc_tiles_dir / "tiles"
-#
-#         # Cache path is a subfolder of the AOC folder, it includes the personal leaderboards for each year
-#         self.cache_dir = self.aoc_tiles_dir / "cache"
-#
-#         # Whether the graphic should be created for days that have not been completed yet.
-#         # Note that missing days between completed days will still be created.
-#         self.create_all_days = False
-#
-#         # Instead of showing the time and rank you achieved this just shows whether
-#         # it was completed with a checkmark
-#         self.show_checkmark_instead_of_time_rank = True
-#
-#         # The year and day pattern to detect directories. For example, if your day folders are
-#         # called "day1" to "day25" then set the pattern to r"day\d{1,2}". The script extracts
-#         # a number from the folder and tries to guess its day that way.
-#         self.year_pattern = r"\d{4}"
-#         self.day_pattern = r"\d{1,2}"
-#
-#         # On how to improve legibility of the text when the background is white, outline will add a dark outline around
-#         # the text, "text" will make the text itself dark, none will not change the text color (leaves it white)
-#         self.contrast_improvement_type: Literal["none", "outline", "dark"] = "outline"
-#
-#         # Add outline if too bright ( = too similar to TEXT_WHITE)
-#         self.outline_color = ImageColor.getrgb("#6C6A6A")
-#         self.contrast_improvement_threshold = 30  # Range from 0 to 255
-#
-#         # Color if a part is not completed
-#         self.not_completed_color = ImageColor.getrgb("#333333")
-#         self.text_color = ImageColor.getrgb("#FFFFFF")
-#
-#         # Width of each tile in the README.md.
-#         # 161px is a rather specific number, with it exactly 5 tiles fit into a row. It is possible to go
-#         # to 162px, however then 1080p displays show 4 tiles in a row, and phone displays show 1 tile
-#         # instead of 2 in a row. Therefore, 161px is used here.
-#         self.tile_width_px = "161px"
-#
-#         # Overrides day 24 part 2 and day 25 both parts to be unsolved
-#         self.debug = False
+        logger.remove()
+        if self.verbose:
+            logger.add(sys.stderr, level="DEBUG")
+
+        logger.debug(self)

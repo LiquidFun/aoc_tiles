@@ -7,6 +7,8 @@ from pathlib import Path
 from pprint import pprint
 from typing import Dict, Set, List, Optional
 
+from loguru import logger
+
 from aoc_tiles.colors import extension_to_colors
 from aoc_tiles.config import Config
 from aoc_tiles.drawer import TileDrawer
@@ -92,6 +94,7 @@ class TileMaker:
         needs_update: bool,
         is_solved: bool,
     ):
+        logger.debug("day={} year={} solutions={}", day, year, solutions)
         languages = []
         for solution in solutions:
             extension = solution.suffix
@@ -162,9 +165,16 @@ class TileMaker:
     def make_tiles(self):
         print("Running AoC-Tiles")
         solve_data = self.compose_solve_data()
-        with ThreadPoolExecutor(max_workers=1) as executor:  # Use ThreadPoolExecutor or ProcessPoolExecutor
-            for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
-                executor.submit(self.handle_year, year, data)
+        logger.info("Found {} years with solutions", len(solve_data.year_to_data))
+        for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
+            logger.debug("year={} data={}", year, data)
+            self.handle_year(year, data)
+
+        # Currently max_workers=1 until bug is fixed where README is written simultaneously
+        # with ThreadPoolExecutor(max_workers=1) as executor:
+        #     for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
+        #         logger.debug("year={} data={}", year, data)
+        #         executor.submit(self.handle_year, year, data)
 
         # pprint(solve_data)
 
