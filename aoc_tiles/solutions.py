@@ -6,6 +6,7 @@ from typing import List, Dict, Optional
 
 import git
 from git import GitCommandError
+from loguru import logger
 
 from aoc_tiles.colors import extension_to_colors
 from aoc_tiles.config import Config
@@ -15,6 +16,14 @@ class SolutionFinder:
     def __init__(self, config: Config):
         self.config = config
         self.repository = git.Repo(config.aoc_dir)
+
+        if self.config.session_cookie_path.exists():
+            msg = f"This is a security risk!" \
+                  f" Ensure that the {self.config.session_cookie_path} file is not tracked by git!"
+            if self.is_file_tracked_by_git(self.config.session_cookie_path):
+                print(f"[ERROR] Session cookie file is tracked by git. {msg} Aborting!")
+            elif not self.is_file_git_ignored(self.config.session_cookie_path):
+                print(f"[WARNING] Session cookie file is not git ignored. {msg}")
 
     def get_solution_paths_by_year(self, aoc_dir: Path) -> Dict[Optional[int], Dict[int, List[Path]]]:
         day_to_solution_paths = defaultdict(lambda: defaultdict(list))
@@ -50,7 +59,7 @@ class SolutionFinder:
         for path in directory.rglob("*"):
             # Either we don't care about git ignores, or we care and then check if file is ignored
             not_git_ignored = not self.config.only_use_git_files
-            not_git_ignored |= self.config.only_use_git_files and not self.is_file_git_ignored(path)
+            not_git_ignored |= self.config.only_use_git_files and not self.is_file_tracked_by_git(path)
             if path.is_file() and path.suffix in extension_to_colors() and not_git_ignored:
                 solution_paths.append(path)
         return solution_paths
@@ -61,6 +70,13 @@ class SolutionFinder:
             return True
         except GitCommandError:
             return False
+
+    def get_tracked_files(self) -> List[str]:
+        return self.repository.git.ls_files().split('\n')
+
+    def is_file_tracked_by_git(self, filepath: Path):
+        tracked_files = self.get_tracked_files()
+        return str(filepath) in tracked_files
 
 
 def main():

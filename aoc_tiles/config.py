@@ -14,6 +14,8 @@ class Config:
     image_dir: Union[str, Path] = field(init=False)
     cache_dir: Union[str, Path] = field(init=False)
 
+    verbose: bool = field(default=False, metadata={"help": "Whether to print debug information."})
+
     what_to_show_on_right_side: Literal["checkmark", "time_and_rank", "loc"] = field(
         default="checkmark", metadata={"help": "What information to display on the right side of each tile."}
     )
@@ -21,28 +23,26 @@ class Config:
         default="file_exists",
         metadata={
             "help": "Condition to count a task as solved. Note that 'on_leaderboard', 'either' and 'both' require a "
-            "session cookie."
+                    "session cookie."
         },
     )
     language_sorting: List[str] = field(
         default_factory=list,
         metadata={
             "help": "Preferred language extensions order for sorting. For example 'py,rs,js' will make Python "
-            "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
+                    "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
         },
     )
-    only_use_git_files: bool = field(default=True, metadata={"help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
-    # separate_files_for_both_parts: bool = field(
-    #     default=False, metadata={"help": "Whether you use separate files for both parts of a task."}
-    # )
+    only_use_git_files: bool = field(default=True, metadata={
+        "help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
     create_all_days: bool = field(default=False, metadata={"help": "Whether to create entries for all days upfront."})
 
     year_pattern: str = field(
         default=r"(?<!\d)(20[123]\d)(?!\d)",
         metadata={
             "help": "Regex pattern for matching years. This extracts the first group as the year and parses it as an "
-            "integer. Make sure that other numbers are not matched by this pattern! For example, "
-            "using negative lookbehind and lookaheads is encouraged to avoid matching longer numbers!"
+                    "integer. Make sure that other numbers are not matched by this pattern! For example, "
+                    "using negative lookbehind and lookaheads is encouraged to avoid matching longer numbers!"
         },
     )
     day_pattern: str = field(
@@ -55,7 +55,7 @@ class Config:
         default=None,
         metadata={
             "help": "If your repository only contains a single year and it cannot be parsed from the path, then you "
-            "should use this to overwrite the year. Every solution is presumed to be for this year."
+                    "should use this to overwrite the year. Every solution is presumed to be for this year."
         },
     )
 
@@ -63,8 +63,8 @@ class Config:
         default="outline",
         metadata={
             "help": "Some languages have very light colors and are hard to see with a white font. Here you can choose "
-            "how the text color changes when the background is too light. 'dark' makes the font dark, "
-            "'outline' adds a black outline."
+                    "how the text color changes when the background is too light. 'dark' makes the font dark, "
+                    "'outline' adds a black outline."
         },
     )
     contrast_improvement_threshold: int = field(
@@ -92,6 +92,8 @@ class Config:
 
         if not hasattr(self, "session_cookie_path"):
             self.session_cookie_path = self.aoc_tiles_dir / "session.cookie"
+            if not self.session_cookie_path.exists():
+                self.session_cookie_path = self.aoc_dir / "session.cookie"
 
         if not hasattr(self, "image_dir"):
             self.image_dir = self.aoc_tiles_dir / "tiles"
@@ -106,7 +108,6 @@ class Config:
         for i, suffix in enumerate(self.language_sorting):
             if not suffix.startswith("."):
                 self.language_sorting[i] = "." + suffix
-
 
 # class Config:
 #     def __init__(self):
