@@ -89,7 +89,6 @@ class TileMaker:
         day: int,
         year: int,
         solutions: List[Path],
-        html: HTML,
         day_scores: Optional[DayScores],
         needs_update: bool,
         stars: int,
@@ -108,8 +107,7 @@ class TileMaker:
             if self.config.auto_add_tiles_to_git:
                 self.solution_finder.git_add(day_graphic_path)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
-        with html.tag("a", href=str(solution_link)):
-            html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
+        return day_graphic_path, solution_link
 
     def fill_empty_days_in_dict(self, day_to_solutions: Dict[int, List[Path]], max_day) -> None:
         if not self.config.create_all_days and len(day_to_solutions) == 0:
@@ -139,10 +137,19 @@ class TileMaker:
         #     with open(completed_cache_path, "r") as file:
         #         completed_solutions = {int(day): solutions for day, solutions in json.load(file).items()}
 
-        for day in range(1, max_day + 1):
-            solutions = day_to_solutions.get(day, [])
-            stars = year_data.day_to_stars[day]
-            self.handle_day(day, year, solutions, html, leaderboard.get(day), True, stars=stars)
+        day_to_future = {}
+        with ThreadPoolExecutor() as executor:
+            for day in range(1, max_day + 1):
+                solutions = day_to_solutions.get(day, [])
+                stars = year_data.day_to_stars[day]
+                future = executor.submit(self.handle_day, day, year, solutions, leaderboard.get(day), True, stars=stars)
+                # result = self.handle_day(day, year, solutions, leaderboard.get(day), True, stars=stars)
+                day_to_future[day] = future
+
+        for day, future in day_to_future.items():
+            tile_path, solution_path = future.result()
+            with html.tag("a", href=str(solution_path)):
+                html.tag("img", closing=False, src=tile_path.as_posix(), width=self.config.tile_width_px)
 
         # with open(completed_cache_path, "w") as file:
         #     completed_days = [day for day, scores in leaderboard.items() if scores.time2 is not None]

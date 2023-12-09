@@ -95,7 +95,12 @@ class Config:
         self.aoc_dir = Path(self.aoc_dir)
 
         if not hasattr(self, "readme_path"):
-            self.readme_path = self.aoc_dir / "README.md"
+            readmes = [path for path in self.aoc_dir.iterdir() if path.name.lower() == "readme.md"]
+            if len(readmes) == 0:
+                exit(f"[ERROR] No README.md found in the root directory of the repository '{self.aoc_dir}'.")
+            elif len(readmes) > 1:
+                exit(f"[ERROR] Multiple README.md files found in the root directory of the repository {readmes}.")
+            self.readme_path = readmes[0]
 
         if not hasattr(self, "aoc_tiles_dir"):
             self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
