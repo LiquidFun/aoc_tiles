@@ -143,7 +143,6 @@ class TileMaker:
                 solutions = day_to_solutions.get(day, [])
                 stars = year_data.day_to_stars[day]
                 future = executor.submit(self.handle_day, day, year, solutions, leaderboard.get(day), True, stars=stars)
-                # result = self.handle_day(day, year, solutions, leaderboard.get(day), True, stars=stars)
                 day_to_future[day] = future
 
         for day, future in day_to_future.items():

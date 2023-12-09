@@ -69,14 +69,14 @@ def cli_parse_config(datacls):
             parser.add_argument(f'--{field.name.replace("_", "-")}', **kwargs)
 
     parser.add_argument(
-        "are ignored",
+        "positional args are ignored",
         nargs="*",
         help="Any non-keyword arguments are ignored. This is because pre-commit passes all arguments to the hook,"
              " and we don't want to fail the hook because of that.",
     )
 
     args = vars(parser.parse_args())
-    del args["are ignored"]
+    del args["positional args are ignored"]
     return datacls(**args)
 
 

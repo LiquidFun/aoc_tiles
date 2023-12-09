@@ -45,7 +45,9 @@ class Config:
     auto_add_tiles_to_git: bool = field(default=False, metadata={
         "help": "Whether to automatically add the tile images to git staging."})
     only_use_solutions_in_git: bool = field(default=True, metadata={
-        "help": "Whether to only use files tracked by git, i.e. files in .gitignore are skipped."})
+        "help": "If true, only solutions will be considered which are tracked by git (git added), "
+                "otherwise all solutions will be used. This is useful for example to ignore auto-generated"
+                "files, like '.d' in Rust or '.o' files in C++."})
 
     year_pattern: str = field(
         default=r"(?<!\d)(20[123]\d)(?!\d)",
@@ -58,9 +60,16 @@ class Config:
     day_pattern: str = field(
         default=r"(?<!\d)([012]?\d)(?!\d)", metadata={"help": "Regex pattern for matching days. Same as year_pattern."}
     )
-    overwrite_ignore_paths: List[Union[str, Path]] = field(
-        default_factory=list, metadata={"help": "A list of paths to ignore when looking for solutions"}
+    exclude_patterns: List[str] = field(
+        default_factory=list, metadata={
+            "help": "A list of comma separated glob patterns to ignore when looking for solutions. "
+                    "Listing the paths works too. "
+                    "For example: '*.py,*.js', '2023/05/05.c' or '2021/**.py'."
+                    "Make sure to escape the patterns with single quotes when running from the shell and with"
+                    "double quotes when using in the yaml to avoid shell expansion!"
+        }
     )
+
     overwrite_year: Optional[int] = field(
         default=None,
         metadata={
@@ -89,7 +98,6 @@ class Config:
     text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
 
     tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels."})
-    debug: bool = field(default=False, metadata={"help": "Enable debug mode."})
 
     def __post_init__(self):
         self.aoc_dir = Path(self.aoc_dir)
