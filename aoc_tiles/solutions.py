@@ -20,10 +20,10 @@ class SolutionFinder:
         if self.config.session_cookie_path.exists():
             msg = f"This is a security risk!" \
                   f" Ensure that the {self.config.session_cookie_path} "
-            if self.is_file_tracked_by_git(self.config.session_cookie_path):
+            if self.git_is_file_tracked(self.config.session_cookie_path):
                 msg += "file is not tracked by git!"
                 exit(f"[ERROR] Session cookie file is tracked by git. {msg} Aborting!")
-            elif not self.is_file_git_ignored(self.config.session_cookie_path):
+            elif not self.git_is_file_ignored(self.config.session_cookie_path):
                 msg += " is in your .gitignore!"
                 print(f"[WARNING] Session cookie file is not git ignored. {msg}")
 
@@ -63,24 +63,28 @@ class SolutionFinder:
         for path in directory.rglob("*"):
             # Either we don't care about git ignores, or we care and then check if file is ignored
             not_git_ignored = not self.config.only_use_solutions_in_git
-            not_git_ignored |= self.config.only_use_solutions_in_git and self.is_file_tracked_by_git(path)
+            not_git_ignored |= self.config.only_use_solutions_in_git and self.git_is_file_tracked(path)
             if path.is_file() and path.suffix in extension_to_colors() and not_git_ignored:
                 solution_paths.append(path)
         return solution_paths
 
-    def is_file_git_ignored(self, filepath):
+    def git_is_file_ignored(self, filepath):
         try:
             self.repository.git.execute(['git', 'check-ignore', '-q', str(filepath)])
             return True
         except GitCommandError:
             return False
 
-    def get_tracked_files(self) -> List[str]:
+    def git_get_tracked_files(self) -> List[str]:
         return self.repository.git.ls_files().split('\n')
 
-    def is_file_tracked_by_git(self, filepath: Path):
-        tracked_files = self.get_tracked_files()
+    def git_is_file_tracked(self, filepath: Path):
+        tracked_files = self.git_get_tracked_files()
         return str(filepath) in tracked_files
+
+    def git_add(self, path: Path):
+        if path.exists():
+            self.repository.git.add(str(path))
 
 
 def main():

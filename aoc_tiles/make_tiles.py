@@ -37,6 +37,7 @@ class TileMaker:
     def __init__(self, config: Config):
         self.config = config
         self.tile_drawer = TileDrawer(config)
+        self.solution_finder = SolutionFinder(config)
 
     def _get_stars(self, solved: DayScores, solution: List[Path]):
         on_leaderboard = 0 if solved is None else bool(solved.rank1) + bool(solved.rank2)
@@ -55,8 +56,7 @@ class TileMaker:
         solution_paths_by_year = {}
         years = []
         if is_solution_paths_needed:
-            solution_finder = SolutionFinder(self.config)
-            solution_paths_by_year = solution_finder.get_solution_paths_by_year(self.config.aoc_dir)
+            solution_paths_by_year = self.solution_finder.get_solution_paths_by_year(self.config.aoc_dir)
 
             years = solution_paths_by_year.keys()
 
@@ -105,6 +105,8 @@ class TileMaker:
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
             self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, stars=stars)
+            if self.config.auto_add_tiles_to_git:
+                self.solution_finder.git_add(day_graphic_path)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         with html.tag("a", href=str(solution_link)):
             html.tag("img", closing=False, src=day_graphic_path.as_posix(), width=self.config.tile_width_px)
