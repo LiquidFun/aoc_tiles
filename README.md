@@ -38,7 +38,7 @@ repos:
       hooks:
           - id: aoc-tiles
             args:
-                - --auto_add_tiles_to_git
+                - --auto-add-tiles-to-git
 ```
 
 There are a lot more flags, see [config.py](./aoc_tiles/config.py) for all of them.
@@ -69,14 +69,14 @@ with examples showing how it changes the look.
 
 <!-- **Note that in order to regenerate images you have to either delete the images or delete the .aoc-tiles-cache!** -->
 
-* `--what-to-show-on-right-side=<value>`:
+* `--what-to-show-on-right-side=`:
 
 | `auto` (default)                                         | `checkmark`               | `time_and_rank`                |
 |----------------------------------------------------------|---------------------------|--------------------------------|
 | `time_and_rank` if cookie is available, else `checkmark` | ![](examples/01basic.png) | ![](examples/01checkmarks.png) |
 
-* `--contrast_improvement_type=<value>`:
+* `--contrast_improvement_type=`:
 
-| `"outline"` (default)          | `"dark"`                 | `"none"`                 |
+| `outline` (default)          | `dark`                 | `none`                 |
 |-----------------------------|--------------------------|--------------------------|
 | ![](examples/05outline.png) | ![](examples/05dark.png) | ![](examples/05none.png) |
