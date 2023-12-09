@@ -66,9 +66,8 @@ class SolutionFinder:
             not_git_ignored |= self.config.only_use_solutions_in_git and self.git_is_file_tracked(path)
             extension_is_supported = path.suffix in extension_to_colors()
             path_is_not_excluded = not any([path.match(exclude) for exclude in self.config.exclude_patterns])
-            if self.config.verbose:
-                if not path_is_not_excluded:
-                    logger.debug("Excluded: {} because of patterns: {}", path, self.config.exclude_patterns)
+            if not path_is_not_excluded:
+                logger.debug("Excluded: {} because of patterns: {}", path, self.config.exclude_patterns)
             if path.is_file() and extension_is_supported and not_git_ignored and path_is_not_excluded:
                 solution_paths.append(path)
         return solution_paths

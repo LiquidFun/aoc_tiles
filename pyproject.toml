@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aoc-tiles"
-version = "0.3.4"
+version = "0.4.0"
 description = "Fancy Advent of Code README tiles showing the completion status of the challenges per day"
 authors = ["Brutenis Gliwa, <brutenis@gmail.com>"]
 license = "Apache-2.0"
