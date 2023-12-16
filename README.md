@@ -34,16 +34,20 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.4.0
+      rev: 0.5.0
       hooks:
           - id: aoc-tiles
             args:
-                - --auto-add-tiles-to-git
+                - --auto-add-tiles-to-git=amend
 ```
 
 There are a lot more flags, see [config.py](./aoc_tiles/config.py) for all of them.
 Auto add tiles is recommended as it will automatically add the tiles to your git repository, otherwise you might
-forget it and the tiles will not be updated.
+forget it and the tiles will not be updated. Note that this will amend your just created commit. If you do not want
+this, remove that flag.
+
+Now install the hook with `pre-commit install --hook-type post-commit` and you are done!
+The **--hook-type** flag is important, otherwise the hook will not run.
 
 ### Set-up
 
