@@ -42,8 +42,9 @@ class Config:
     )
     create_all_days: bool = field(default=False, metadata={"help": "Whether to create entries for all days upfront."})
 
-    auto_add_tiles_to_git: bool = field(default=False, metadata={
-        "help": "Whether to automatically add the tile images to git staging."})
+    auto_add_tiles_to_git: Literal["no", "add", "amend"] = field(default="no", metadata={
+        "help": "Whether to automatically add the tile images to git. 'add' will add new files, 'amend' will add "
+                "and amend the commit with the new files. 'no' will not add the files to git."})
     only_use_solutions_in_git: bool = field(default=True, metadata={
         "help": "If true, only solutions will be considered which are tracked by git (git added), "
                 "otherwise all solutions will be used. This is useful for example to ignore auto-generated"
@@ -112,6 +113,8 @@ class Config:
 
         if not hasattr(self, "aoc_tiles_dir"):
             self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
+
+        self.running_lock_path = self.aoc_tiles_dir / "running.lock"
 
         if not hasattr(self, "session_cookie_path"):
             self.session_cookie_path = self.aoc_tiles_dir / "session.cookie"

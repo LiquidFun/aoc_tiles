@@ -97,6 +97,11 @@ class SolutionFinder:
         if path.exists():
             self.repository.git.add(str(path))
 
+    def git_commit_amend(self):
+        # Command based on this:
+        # https://stackoverflow.com/questions/3284292/can-a-git-hook-automatically-add-files-to-the-commit
+        self.repository.git.commit('--amend', '-C', 'HEAD', '--no-verify')
+
 
 def main():
     SolutionFinder(Config()).get_solution_paths_by_year(Path())
