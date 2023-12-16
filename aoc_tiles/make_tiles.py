@@ -102,8 +102,6 @@ class TileMaker:
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
             self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, stars=stars)
-            if self.config.auto_add_tiles_to_git:
-                self.solution_finder.git_add(day_graphic_path)
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         return day_graphic_path, solution_link
 
@@ -172,6 +170,9 @@ class TileMaker:
         for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
             logger.debug("year={} data={}", year, data)
             self.handle_year(year, data)
+
+        if self.config.auto_add_tiles_to_git:
+            self.solution_finder.git_add(self.config.image_dir)
 
         # Currently max_workers=1 until bug is fixed where README is written simultaneously
         # with ThreadPoolExecutor(max_workers=1) as executor:

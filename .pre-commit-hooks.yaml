@@ -2,3 +2,5 @@
   name: AOC Tiles
   entry: aoctiles
   language: python
+  always_run: true
+  stages: [post-commit, manual]
