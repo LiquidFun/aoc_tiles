@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from functools import cache, lru_cache
 from pathlib import Path
 from pprint import pprint
 from typing import List, Dict, Optional
@@ -31,6 +32,7 @@ class SolutionFinder:
         day_to_solution_paths = defaultdict(lambda: defaultdict(list))
         year_pattern = re.compile(self.config.year_pattern)
         day_pattern = re.compile(self.config.day_pattern)
+        logger.debug("Finding solution files recursively in {}", aoc_dir)
         candidate_paths = sorted(self._find_recursive_solution_files(aoc_dir))
         logger.debug("Candidate paths: {}", candidate_paths)
         for path in candidate_paths:
@@ -59,17 +61,21 @@ class SolutionFinder:
         return solution_paths_dict
 
     def _find_recursive_solution_files(self, directory: Path) -> List[Path]:
+        if self.config.only_use_solutions_in_git:
+            files = [Path(s) for s in self.git_get_tracked_files()]
+        else:
+            files = directory.rglob("*")
+
+        logger.debug("Found {} files", len(files))
         solution_paths = []
-        for path in directory.rglob("*"):
-            # Either we don't care about git ignores, or we care and then check if file is ignored
-            not_git_ignored = not self.config.only_use_solutions_in_git
-            not_git_ignored |= self.config.only_use_solutions_in_git and self.git_is_file_tracked(path)
+        for path in files:
             extension_is_supported = path.suffix in extension_to_colors()
-            path_is_not_excluded = not any([path.match(exclude) for exclude in self.config.exclude_patterns])
-            if not path_is_not_excluded:
+            path_is_excluded = any([path.match(exclude) for exclude in self.config.exclude_patterns])
+            if path_is_excluded:
                 logger.debug("Excluded: {} because of patterns: {}", path, self.config.exclude_patterns)
-            if path.is_file() and extension_is_supported and not_git_ignored and path_is_not_excluded:
+            if path.is_file() and extension_is_supported and not path_is_excluded:
                 solution_paths.append(path)
+        logger.debug("Found {} solution files", len(solution_paths))
         return solution_paths
 
     def git_is_file_ignored(self, filepath):
@@ -79,6 +85,7 @@ class SolutionFinder:
         except GitCommandError:
             return False
 
+    @lru_cache
     def git_get_tracked_files(self) -> List[str]:
         return self.repository.git.ls_files().split('\n')
 

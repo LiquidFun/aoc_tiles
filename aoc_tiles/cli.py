@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Literal, Union, get_args, List, get_origin
 
 import rich.traceback
+from loguru import logger
 
 from aoc_tiles.config import Config
 from aoc_tiles.make_tiles import TileMaker
@@ -81,9 +82,13 @@ def cli_parse_config(datacls):
 
 
 def main():
+    logger.debug("Starting AOC Tiles")
     rich.traceback.install()
+    logger.debug("Rich installed")
     config = cli_parse_config(Config)
+    logger.debug("Config parsed")
     TileMaker(config).make_tiles()
+    logger.debug("Tiles made")
 
 
 if __name__ == "__main__":

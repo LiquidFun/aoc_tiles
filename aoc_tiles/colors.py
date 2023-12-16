@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Tuple, Dict
 
 import yaml
+from loguru import logger
 
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yaml"
 
@@ -15,7 +16,12 @@ includes = {".ipynb": "#DA5B0B"}
 def extension_to_colors() -> Dict[str, str]:
     extension_to_color = {}
     with open(GITHUB_LANGUAGES_PATH) as file:
-        github_languages = yaml.load(file, Loader=yaml.FullLoader)
+        logger.debug("Loading github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
+        yaml_loader = yaml.CLoader if yaml.__with_libyaml__ else yaml.Loader
+        if not yaml.__with_libyaml__:
+            logger.warning("Using slow yaml parser (0.5s vs 0.1s)!")
+        github_languages = yaml.load(file, Loader=yaml_loader)
+        logger.debug("Loaded github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
         for language, data in github_languages.items():
             if "color" in data and "extensions" in data and data["type"] == "programming" and language not in excludes:
                 for extension in data["extensions"]:

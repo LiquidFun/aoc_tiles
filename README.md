@@ -75,7 +75,7 @@ with examples showing how it changes the look.
 |----------------------------------------------------------|---------------------------|--------------------------------|
 | `time_and_rank` if cookie is available, else `checkmark` | ![](examples/01basic.png) | ![](examples/01checkmarks.png) |
 
-* `--contrast_improvement_type=`:
+* `--contrast-improvement-type=`:
 
 | `outline` (default)          | `dark`                 | `none`                 |
 |-----------------------------|--------------------------|--------------------------|

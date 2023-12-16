@@ -1,11 +1,8 @@
-import concurrent
-import json
 import re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from pprint import pprint
-from typing import Dict, Set, List, Optional
+from typing import Dict, Set, List, Optional, Any
 
 from loguru import logger
 
@@ -73,6 +70,7 @@ class TileMaker:
             day_to_solution = solution_paths_by_year.get(year, {})
             day_to_scores = {}
             if is_leaderboard_needed:
+                logger.debug("Requesting leaderboard for year {}", year)
                 day_to_scores = request_leaderboard(year, self.config)
 
             day_to_stars = {}
@@ -123,9 +121,6 @@ class TileMaker:
         html = HTML()
         with html.tag("h1", align="center"):
             stars = sum(year_data.day_to_stars.values())
-            # stars = sum(
-            #     (ds.time1 is not None) + (ds.time2 is not None) for ds in leaderboard.values() if ds is not None
-            # )
             html.push(f"{year} - {stars} ⭐")
         max_solved_day = max(day for day, stars in year_data.day_to_stars.items() if stars > 0)
         max_day = 25 if self.config.create_all_days else max_solved_day
@@ -138,7 +133,7 @@ class TileMaker:
         #         completed_solutions = {int(day): solutions for day, solutions in json.load(file).items()}
 
         day_to_future = {}
-        with ThreadPoolExecutor() as executor:
+        with ProcessPoolExecutor() as executor:
             for day in range(1, max_day + 1):
                 solutions = day_to_solutions.get(day, [])
                 stars = year_data.day_to_stars[day]
