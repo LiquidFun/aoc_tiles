@@ -163,13 +163,13 @@ class TileMaker:
         with open(self.config.readme_path, "w", encoding="utf-8") as file:
             file.write(str(new_text))
 
-    def _ensure_is_not_running(self):
+    def _ensure_is_not_running_already(self):
         if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
             print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
             exit()
 
     def make_tiles(self):
-        self._ensure_is_not_running()
+        self._ensure_is_not_running_already()
         print("Running AoC-Tiles")
         solve_data = self.compose_solve_data()
         logger.info("Found {} years with solutions", len(solve_data.year_to_data))
@@ -179,6 +179,7 @@ class TileMaker:
 
         if self.config.auto_add_tiles_to_git in ["add", "amend"]:
             self.solution_finder.git_add(self.config.image_dir)
+            self.solution_finder.git_add(self.config.readme_path)
 
         if self.config.auto_add_tiles_to_git in ["amend"]:
             with open(self.config.running_lock_path, "w") as file:
@@ -188,15 +189,6 @@ class TileMaker:
             finally:
                 print("Could not amend commit. Maybe there is nothing to amend?")
                 self.config.running_lock_path.unlink()
-
-
-        # Currently max_workers=1 until bug is fixed where README is written simultaneously
-        # with ThreadPoolExecutor(max_workers=1) as executor:
-        #     for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
-        #         logger.debug("year={} data={}", year, data)
-        #         executor.submit(self.handle_year, year, data)
-
-        # pprint(solve_data)
 
 
 def main():

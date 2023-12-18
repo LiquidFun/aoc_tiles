@@ -53,7 +53,7 @@ class TileDrawer:
                     text_kwargs["fill"] = self.config.not_completed_color
                 break
 
-        draw_text = partial(drawer.text, **text_kwargs)
+        draw_text = lambda *args, **kwargs: drawer.text(*args, **kwargs, **text_kwargs)
         draw_line = partial(drawer.line, fill=text_kwargs["fill"], width=2)
 
         # === Left side ===
@@ -70,6 +70,9 @@ class TileDrawer:
             y = 50 if part == 2 else 0
             time = getattr(day_scores, f"time{part}", None)
             rank = getattr(day_scores, f"rank{part}", None)
+
+            color_override = self.config.top100_color if rank and int(rank) <= 100 else self.config.text_color
+            text_kwargs["fill"] = color_override
 
             if stars >= part:
                 draw_text((104, -5 + y), f"P{part} ", align="left", font=main_font(25))

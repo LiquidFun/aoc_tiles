@@ -96,9 +96,14 @@ class Config:
     not_completed_color: Union[str, Tuple] = field(
         default="#333333", metadata={"help": "Color to signify incomplete tasks.", "type": str}
     )
+    top100_color: Union[str, Tuple] = field(
+        default="#ffdd00", metadata={"help": "Color to highlight top 100 ranking. Only used if session"
+                                             "cookie is provided.", "type": str}
+    )
     text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
 
-    tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels."})
+    tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels. You likely don't need"
+                                                                  "to change this."})
 
     def __post_init__(self):
         self.aoc_dir = Path(self.aoc_dir)
@@ -136,6 +141,7 @@ class Config:
         self.outline_color = ImageColor.getrgb(self.outline_color)
         self.not_completed_color = ImageColor.getrgb(self.not_completed_color)
         self.text_color = ImageColor.getrgb(self.text_color)
+        self.top100_color = ImageColor.getrgb(self.top100_color)
 
         for i, suffix in enumerate(self.language_sorting):
             if not suffix.startswith("."):
