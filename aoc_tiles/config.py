@@ -118,6 +118,7 @@ class Config:
 
         if not hasattr(self, "aoc_tiles_dir"):
             self.aoc_tiles_dir = self.aoc_dir / ".aoc_tiles"
+            self.aoc_tiles_dir.mkdir(exist_ok=True)
 
         self.running_lock_path = self.aoc_tiles_dir / "running.lock"
 

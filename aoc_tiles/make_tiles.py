@@ -164,9 +164,10 @@ class TileMaker:
             file.write(str(new_text))
 
     def _ensure_is_not_running_already(self):
-        if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
-            print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
-            exit()
+        if self.config.aoc_tiles_dir.exists():
+            if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
+                print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
+                exit()
 
     def make_tiles(self):
         self._ensure_is_not_running_already()
