@@ -11,7 +11,7 @@ It uses the personal [AoC Leaderboard](https://adventofcode.com/2023/leaderboard
 ## Installation
 
 For this year (2023) I have rewritten this script to make it a lot easier to use. 
-Now you **only** need to install `pre-commit`, add a pre-commit hook and add two HTML comments to your README.
+Now you **only** need to install `pre-commit`, add a pre-commit hook and add two HTML comments to your README. More details below.
 
 ### Install `pre-commit`:
 
