@@ -140,7 +140,7 @@ class TileMaker:
 
         for day, future in day_to_future.items():
             tile_path, solution_path = future.result()
-            with html.tag("a", href=str(solution_path)):
+            with html.tag("a", href=str(solution_path.as_posix())):
                 html.tag("img", closing=False, src=tile_path.as_posix(), width=self.config.tile_width_px)
 
         # with open(completed_cache_path, "w") as file:
