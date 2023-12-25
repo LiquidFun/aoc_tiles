@@ -102,7 +102,7 @@ class SolutionFinder:
         return str(filepath) in tracked_files
 
     def git_add(self, path: Path):
-        if repository is not None and path.exists():
+        if self.repository is not None and path.exists():
             self.repository.git.add(str(path))
 
     def git_commit_amend(self):

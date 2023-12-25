@@ -98,7 +98,7 @@ with examples showing how it changes the look.
 
 | `auto` (default)                                         | `checkmark`               | `time_and_rank`                |
 |----------------------------------------------------------|---------------------------|--------------------------------|
-| `time_and_rank` if cookie is available, else `checkmark` | ![](examples/01basic.png) | ![](examples/01checkmarks.png) |
+| `time_and_rank` if cookie is available, else `checkmark` | ![](examples/01checkmarks.png) | ![](examples/01basic.png) |
 
 * `--contrast-improvement-type=`:
 
