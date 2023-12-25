@@ -34,11 +34,18 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.5.0
+      rev: 0.5.1
       hooks:
           - id: aoc-tiles
-            args:
-                - --auto-add-tiles-to-git=amend
+            # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
+            # possibly amends your commit by creating the tile images and updating the README.
+            # Language sorting shows the preference of the order of the languages to use.
+            # Exclude paterns are globs which can be used to exclude files when creating
+            # the tiles. See the customization section in the README for more flags.
+            # args:
+            #     - --auto-add-tiles-to-git=amend
+            #     - --language-sorting=jl,kt,py,rs
+            #     - --exclude-patterns="2021/*/*.apl,2021/*/*.py,2021/*/*.cpp"
 ```
 
 There are a lot more flags, see [config.py](./aoc_tiles/config.py) for all of them.
@@ -50,6 +57,13 @@ Now install the hook with `pre-commit install --hook-type post-commit` and you a
 The **--hook-type** flag is important, otherwise the hook will not run.
 
 ### Set-up
+
+Add this to your .gitignore:
+
+```
+/.aoc_tiles/**/*
+!/.aoc_tiles/tiles/
+```
 
 Now add `<!-- AOC TILES BEGIN -->` and `<!-- AOC TILES END -->` in your README, everything between these 2 tags
 will always be replaced by the script, so do not add additional information there. Note that these are HTML comments,
