@@ -68,8 +68,8 @@ this, remove that flag.
 Add this to your .gitignore:
 
 ```
-/.aoc_tiles/**/*
-!/.aoc_tiles/tiles/
+.aoc_tiles/*
+!.aoc_tiles/tiles/
 ```
 
 Now add `<!-- AOC TILES BEGIN -->` and `<!-- AOC TILES END -->` in your README, everything between these 2 tags
