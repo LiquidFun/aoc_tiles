@@ -48,13 +48,19 @@ repos:
             #     - --exclude-patterns="2021/*/*.apl,2021/*/*.py,2021/*/*.cpp"
 ```
 
+Now **install** the hook with:
+
+```
+pre-commit install --hook-type post-commit
+```  
+
+and you are done! The **--hook-type post-commit** flag is important, otherwise the hook will not run.
+
 There are a lot more flags, see [config.py](./aoc_tiles/config.py) for all of them.
 Auto add tiles is recommended as it will automatically add the tiles to your git repository, otherwise you might
 forget it and the tiles will not be updated. Note that this will amend your just created commit. If you do not want
 this, remove that flag.
 
-Now install the hook with `pre-commit install --hook-type post-commit` and you are done!
-The **--hook-type** flag is important, otherwise the hook will not run.
 
 ### Set-up
 
