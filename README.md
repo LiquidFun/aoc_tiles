@@ -34,7 +34,7 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.5.1
+      rev: 0.5.3
       hooks:
           - id: aoc-tiles
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
@@ -42,6 +42,7 @@ repos:
             # Language sorting shows the preference of the order of the languages to use.
             # Exclude paterns are globs which can be used to exclude files when creating
             # the tiles. See the customization section in the README for more flags.
+            # Simply remove the comments (#) below for args and the flags you want.
             # args:
             #     - --auto-add-tiles-to-git=amend
             #     - --language-sorting=jl,kt,py,rs

@@ -4,3 +4,4 @@ session.cookie
 cache
 .idea
 .aoc_tiles
+/tests/samples/*

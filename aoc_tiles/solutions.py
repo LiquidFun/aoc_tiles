@@ -6,7 +6,7 @@ from pprint import pprint
 from typing import List, Dict, Optional
 
 import git
-from git import GitCommandError
+from git import GitCommandError, InvalidGitRepositoryError
 from loguru import logger
 
 from aoc_tiles.colors import extension_to_colors
@@ -16,7 +16,11 @@ from aoc_tiles.config import Config
 class SolutionFinder:
     def __init__(self, config: Config):
         self.config = config
-        self.repository = git.Repo(config.aoc_dir)
+        try:
+            self.repository = git.Repo(config.aoc_dir)
+        except InvalidGitRepositoryError:
+            print(f"{config.aoc_dir} is an InvalidGitRepository. Git functionality will not be available.")
+            self.repository = None
 
         if self.config.session_cookie_path.exists():
             msg = f"This is a security risk!" \
@@ -61,10 +65,10 @@ class SolutionFinder:
         return solution_paths_dict
 
     def _find_recursive_solution_files(self, directory: Path) -> List[Path]:
-        if self.config.only_use_solutions_in_git:
+        if self.config.only_use_solutions_in_git and self.repository is not None:
             files = [Path(s) for s in self.git_get_tracked_files()]
         else:
-            files = directory.rglob("*")
+            files = list(directory.rglob("*"))
 
         logger.debug("Found {} files", len(files))
         solution_paths = []
@@ -79,6 +83,8 @@ class SolutionFinder:
         return solution_paths
 
     def git_is_file_ignored(self, filepath):
+        if self.repository is None:
+            return False
         try:
             self.repository.git.execute(['git', 'check-ignore', '-q', str(filepath)])
             return True
@@ -87,6 +93,8 @@ class SolutionFinder:
 
     @lru_cache
     def git_get_tracked_files(self) -> List[str]:
+        if self.repository is None:
+            return []
         return self.repository.git.ls_files().split('\n')
 
     def git_is_file_tracked(self, filepath: Path):
@@ -94,13 +102,14 @@ class SolutionFinder:
         return str(filepath) in tracked_files
 
     def git_add(self, path: Path):
-        if path.exists():
+        if repository is not None and path.exists():
             self.repository.git.add(str(path))
 
     def git_commit_amend(self):
         # Command based on this:
         # https://stackoverflow.com/questions/3284292/can-a-git-hook-automatically-add-files-to-the-commit
-        self.repository.git.commit('--amend', '-C', 'HEAD', '--no-verify')
+        if self.repository is not None:
+            self.repository.git.commit('--amend', '-C', 'HEAD', '--no-verify')
 
 
 def main():
