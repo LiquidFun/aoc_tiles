@@ -3,7 +3,7 @@
 This script creates a graphic for each day for each year of the Advent of Code. 
 A tile is an image which represents both parts of a day, it looks like this:
 
-![AoC Tiles](examples/basic.png)
+![AoC Tiles](examples/showcase.png)
 
 It uses the personal [AoC Leaderboard](https://adventofcode.com/2023/leaderboard/self) to get the data for each day using your cookie. 
 
