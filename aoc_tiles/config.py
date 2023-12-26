@@ -71,7 +71,7 @@ class Config:
         }
     )
 
-    overwrite_year: Optional[int] = field(
+    overwrite_year: int = field(
         default=None,
         metadata={
             "help": "If your repository only contains a single year and it cannot be parsed from the path, then you "

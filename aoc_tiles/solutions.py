@@ -32,7 +32,7 @@ class SolutionFinder:
                 msg += " is in your .gitignore!"
                 print(f"[WARNING] Session cookie file is not git ignored. {msg}")
 
-    def get_solution_paths_by_year(self, aoc_dir: Path) -> Dict[Optional[int], Dict[int, List[Path]]]:
+    def get_solution_paths_by_year(self, aoc_dir: Path) -> Dict[int, Dict[int, List[Path]]]:
         day_to_solution_paths = defaultdict(lambda: defaultdict(list))
         year_pattern = re.compile(self.config.year_pattern)
         day_pattern = re.compile(self.config.day_pattern)
@@ -40,13 +40,15 @@ class SolutionFinder:
         candidate_paths = sorted(self._find_recursive_solution_files(aoc_dir))
         logger.debug("Candidate paths: {}", candidate_paths)
         for path in candidate_paths:
-            years = year_pattern.findall(str(path))
-            days = day_pattern.findall(str(path))
-            if not years:
-                years.append(None)
-            for year in years:
-                if days:
-                    day_to_solution_paths[year][int(days[0])].append(path)
+            years = year_pattern.findall(path.as_posix())
+            days = day_pattern.findall(path.as_posix())
+            year = None
+            if years:
+                year = int(years[-1])
+            if self.config.overwrite_year is not None:
+                year = self.config.overwrite_year
+            if year is not None and days:
+                day_to_solution_paths[year][int(days[0])].append(path)
 
         self._ensure_sorting(day_to_solution_paths)
         # pprint(day_to_solution_paths)

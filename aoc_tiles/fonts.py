@@ -7,7 +7,7 @@ FONTS_PATH = Path(__file__).parent / "resources" / "fonts"
 
 
 @cache
-def get_font(size: int, path: str):
+def get_font(size: int, path: Path):
     return ImageFont.truetype(str(path), size)
 
 
