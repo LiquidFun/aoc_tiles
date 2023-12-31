@@ -47,14 +47,8 @@ class TileMaker:
         }[self.config.count_as_solved_when]
 
     def compose_solve_data(self) -> SolveData:
-        is_solution_paths_needed = self.config.what_to_show_on_right_side in [
-            "loc"
-        ] or self.config.count_as_solved_when in ["file_exists", "both", "either"]
-        solution_paths_by_year = {}
-        years = []
-        if is_solution_paths_needed:
-            solution_paths_by_year = self.solution_finder.get_solution_paths_by_year(self.config.aoc_dir)
-            years = solution_paths_by_year.keys()
+        solution_paths_by_year = self.solution_finder.get_solution_paths_by_year(self.config.aoc_dir)
+        years = solution_paths_by_year.keys()
 
         is_leaderboard_needed = self.config.what_to_show_on_right_side in [
             "time_and_rank"
