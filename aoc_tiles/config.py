@@ -23,7 +23,7 @@ class Config:
             "help": "What information to display on the right side of each tile. "
                     "'checkmark' only displays a checkmark for each part if the day is solved. "
                     "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
-                    "'loc' displays the number of lines of code of the solution (not implemented. "
+                    "'loc' displays the number of lines of code of the solution (not implemented). "
                     "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."}
     )
     count_as_solved_when: Literal["auto", "on_leaderboard", "file_exists", "either", "both"] = field(
@@ -50,6 +50,11 @@ class Config:
                 "otherwise all solutions will be used. This is useful for example to ignore auto-generated"
                 "files, like '.d' in Rust or '.o' files in C++."})
 
+    show_total_stars_for_all_years: Literal["no", "auto", "yes"] = field(default="auto", metadata={
+        "help": "Whether to add an additional header in front which shows the total collected stars for all years."
+                "'auto' will only show the header if you have stars in at least 3 separate years. "
+                "'yes' will always show the header. 'no' will never show the header."})
+
     year_pattern: str = field(
         default=r"(?<!\d)(20[123]\d)(?!\d)",
         metadata={
@@ -66,8 +71,9 @@ class Config:
             "help": "A list of comma separated glob patterns to ignore when looking for solutions. "
                     "Listing the paths works too. "
                     "For example: '*.py,*.js', '2023/05/05.c' or '2021/**.py'."
-                    "Make sure to escape the patterns with single quotes when running from the shell and with"
-                    "double quotes when using in the yaml to avoid shell expansion!"
+                    "Make sure to escape the patterns with single quotes when running from the shell! "
+                    "Do NOT escape them when using the flag in the yaml! "
+                    "Otherwise the qoute will be part of the pattern."
         }
     )
 

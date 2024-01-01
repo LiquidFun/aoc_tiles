@@ -34,7 +34,7 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.5.6
+      rev: 0.6.0
       hooks:
           - id: aoc-tiles
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
@@ -46,7 +46,7 @@ repos:
             # args:
             #     - --auto-add-tiles-to-git=amend
             #     - --language-sorting=jl,kt,py,rs
-            #     - --exclude-patterns="2021/*/*.apl,2021/*/*.py,2021/*/*.cpp"
+            #     - --exclude-patterns=2021/*/*.apl,2021/*/*.py,2021/*/*.cpp
 ```
 
 Now **install** the hook with:

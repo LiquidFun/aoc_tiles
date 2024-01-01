@@ -1,6 +1,7 @@
 import re
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+import datetime
 from pathlib import Path
 from typing import Dict, Set, List, Optional, Any
 
@@ -102,11 +103,10 @@ class TileMaker:
             if day not in day_to_solutions:
                 day_to_solutions[day] = []
 
-    def handle_year(self, year: int, year_data: YearData):
+    def handle_year(self, year: int, year_data: YearData, html: HTML):
         print(f"=== Generating table for year {year} ===")
         leaderboard = year_data.day_to_scores
         day_to_solutions = year_data.day_to_paths
-        html = HTML()
         with html.tag("h1", align="center"):
             stars = sum(year_data.day_to_stars.values())
             html.push(f"{year} - {stars} ⭐")
@@ -132,11 +132,11 @@ class TileMaker:
             tile_path, solution_path = future.result()
             
             if solution_path is None:
-                sol_path = str(solution_path)
+                solution_href = str(solution_path)
             else:
-                sol_path = str(solution_path.as_posix())
+                solution_href = str(solution_path.as_posix())
 
-            with html.tag("a", href=sol_path):
+            with html.tag("a", href=solution_href):
                 html.tag("img", closing=False, src=tile_path.as_posix(), width=self.config.tile_width_px)
 
         # with open(completed_cache_path, "w") as file:
@@ -145,6 +145,13 @@ class TileMaker:
         #         json.dumps({day: solutions for day, solutions in day_to_solutions.items() if day in completed_days})
         #     )
 
+    def _ensure_is_not_running_already(self):
+        if self.config.aoc_tiles_dir.exists():
+            if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
+                print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
+                exit()
+
+    def _write_to_readme(self, html: HTML):
         with open(self.config.readme_path, "r", encoding="utf-8") as file:
             text = file.read()
             begin = README_TILES_BEGIN
@@ -159,33 +166,52 @@ class TileMaker:
         with open(self.config.readme_path, "w", encoding="utf-8") as file:
             file.write(str(new_text))
 
-    def _ensure_is_not_running_already(self):
-        if self.config.aoc_tiles_dir.exists():
-            if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
-                print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
-                exit()
+    @staticmethod
+    def _get_total_possible_stars_for_date(utc_date: datetime.datetime):
+        total = 0
+        for year in range(2015, utc_date.year + 2):
+            for day in range(1, 26):
+                unlock_time = datetime.datetime(year, 12, day, 0, 0, 0, 0, tzinfo=datetime.UTC)
+                if utc_date >= unlock_time:
+                    total += 2
+        return total
+
+    def _add_total_completed_stars_to_html(self, solve_data: SolveData, html: HTML):
+        add_header = self.config.show_total_stars_for_all_years == 'yes' \
+                     or self.config.show_total_stars_for_all_years == 'auto' and len(solve_data.year_to_data) >= 3
+        if add_header:
+            total_stars = sum(sum(data.day_to_stars.values()) for data in solve_data.year_to_data.values())
+            total_possible_stars = self._get_total_possible_stars_for_date(datetime.datetime.now(datetime.UTC))
+            with html.tag("h1", align="center"):
+                html.push(f"Advent of Code - {total_stars}/{total_possible_stars} ⭐")
 
     def make_tiles(self):
         self._ensure_is_not_running_already()
         print("Running AoC-Tiles")
         solve_data = self.compose_solve_data()
         logger.info("Found {} years with solutions", len(solve_data.year_to_data))
+        html = HTML()
+        self._add_total_completed_stars_to_html(solve_data, html)
+
         for year, data in sorted(solve_data.year_to_data.items(), reverse=True):
             logger.debug("year={} data={}", year, data)
-            self.handle_year(year, data)
+            self.handle_year(year, data, html)
+
+        self._write_to_readme(html)
 
         if self.config.auto_add_tiles_to_git in ["add", "amend"]:
             self.solution_finder.git_add(self.config.image_dir)
             self.solution_finder.git_add(self.config.readme_path)
 
         if self.config.auto_add_tiles_to_git in ["amend"]:
-            with open(self.config.running_lock_path, "w") as file:
-                file.write("")
             try:
+                with open(self.config.running_lock_path, "w") as file:
+                    file.write("")
                 self.solution_finder.git_commit_amend()
             finally:
-                print("Could not amend commit. Maybe there is nothing to amend?")
-                self.config.running_lock_path.unlink()
+                # print("Could not amend commit. Maybe there is nothing to amend?")
+                if self.config.running_lock_path.exists():
+                    self.config.running_lock_path.unlink()
 
 
 def main():

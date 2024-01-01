@@ -23,8 +23,9 @@ class HTML:
     Originally, this was used a lot more, however at this point it is only needed for a single with statement.
     """
 
-    tags: list[str] = []
-    depth = 0
+    def __init__(self):
+        self.tags: list[str] = []
+        self.depth = 0
 
     def push(self, tag: str, depth=0):
         if depth < 0:
