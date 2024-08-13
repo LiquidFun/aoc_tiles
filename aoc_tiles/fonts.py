@@ -1,4 +1,4 @@
-from functools import cache
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import ImageFont
@@ -6,7 +6,7 @@ from PIL import ImageFont
 FONTS_PATH = Path(__file__).parent / "resources" / "fonts"
 
 
-@cache
+@lru_cache
 def get_font(size: int, path: Path):
     return ImageFont.truetype(str(path), size)
 

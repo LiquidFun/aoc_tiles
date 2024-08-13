@@ -1,9 +1,8 @@
 import re
 from collections import defaultdict
-from functools import cache, lru_cache
+from functools import lru_cache
 from pathlib import Path
-from pprint import pprint
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 import git
 from git import GitCommandError, InvalidGitRepositoryError

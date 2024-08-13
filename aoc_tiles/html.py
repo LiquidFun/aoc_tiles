@@ -1,3 +1,6 @@
+from typing import List
+
+
 class HTMLTag:
     """A convenience class for creating HTML tags, can be used in a with statement, which will close the tag."""
 
@@ -24,7 +27,7 @@ class HTML:
     """
 
     def __init__(self):
-        self.tags: list[str] = []
+        self.tags: List[str] = []
         self.depth = 0
 
     def push(self, tag: str, depth=0):

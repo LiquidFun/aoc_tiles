@@ -171,7 +171,7 @@ class TileMaker:
         total = 0
         for year in range(2015, utc_date.year + 2):
             for day in range(1, 26):
-                unlock_time = datetime.datetime(year, 12, day, 0, 0, 0, 0, tzinfo=datetime.UTC)
+                unlock_time = datetime.datetime(year, 12, day, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)
                 if utc_date >= unlock_time:
                     total += 2
         return total
@@ -181,7 +181,7 @@ class TileMaker:
                      or self.config.show_total_stars_for_all_years == 'auto' and len(solve_data.year_to_data) >= 3
         if add_header:
             total_stars = sum(sum(data.day_to_stars.values()) for data in solve_data.year_to_data.values())
-            total_possible_stars = self._get_total_possible_stars_for_date(datetime.datetime.now(datetime.UTC))
+            total_possible_stars = self._get_total_possible_stars_for_date(datetime.datetime.now(datetime.timezone.utc))
             with html.tag("h1", align="center"):
                 html.push(f"Advent of Code - {total_stars}/{total_possible_stars} ⭐")
 
