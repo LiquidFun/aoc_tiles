@@ -7,13 +7,12 @@ from typing import Dict, Set, List, Optional, Any
 
 from loguru import logger
 
-from aoc_tiles.colors import extension_to_colors
+from aoc_tiles.colors import extension_to_colors, extension_to_programming_language
 from aoc_tiles.config import Config
 from aoc_tiles.drawer import TileDrawer
 from aoc_tiles.html import HTML
 from aoc_tiles.leaderboard import DayScores, request_leaderboard
 from aoc_tiles.solutions import SolutionFinder
-
 
 README_TILES_BEGIN = "<!-- AOC TILES BEGIN -->"
 README_TILES_END = "<!-- AOC TILES END -->"
@@ -74,13 +73,13 @@ class TileMaker:
         return solve_data
 
     def handle_day(
-        self,
-        day: int,
-        year: int,
-        solutions: List[Path],
-        day_scores: Optional[DayScores],
-        needs_update: bool,
-        stars: int,
+            self,
+            day: int,
+            year: int,
+            solutions: List[Path],
+            day_scores: Optional[DayScores],
+            needs_update: bool,
+            stars: int,
     ):
         logger.debug("day={} year={} solutions={}", day, year, solutions)
         languages = []
@@ -103,13 +102,24 @@ class TileMaker:
             if day not in day_to_solutions:
                 day_to_solutions[day] = []
 
+    def _get_programming_languages_used_daily(self, year_data: YearData) -> List[str]:
+        extensions = None
+        for paths in year_data.day_to_paths.values():
+            suffixes = {path.suffix for path in paths}
+            if extensions is None:
+                extensions = suffixes
+            extensions &= suffixes
+
+        return [extension_to_programming_language()[extension] for extension in extensions]
+
     def handle_year(self, year: int, year_data: YearData, html: HTML):
         print(f"=== Generating table for year {year} ===")
         leaderboard = year_data.day_to_scores
         day_to_solutions = year_data.day_to_paths
         with html.tag("h1", align="center"):
             stars = sum(year_data.day_to_stars.values())
-            html.push(f"{year} - {stars} ⭐")
+            daily_language = " - " + "/".join(self._get_programming_languages_used_daily(year_data))
+            html.push(f"{year} - {stars} ⭐{daily_language}")
         max_solved_day = max(day for day, stars in year_data.day_to_stars.items() if stars > 0)
         max_day = 25 if self.config.create_all_days else max_solved_day
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
@@ -130,7 +140,7 @@ class TileMaker:
 
         for day, future in day_to_future.items():
             tile_path, solution_path = future.result()
-            
+
             if solution_path is None:
                 solution_href = str(solution_path)
             else:

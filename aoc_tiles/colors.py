@@ -8,13 +8,13 @@ from loguru import logger
 
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yaml"
 
-excludes = ["GCC Machine Description"]
+# Until someone complains, I'll exclude languages which conflict with my language extensions
+excludes = ["GCC Machine Description", "Standard ML"]
 includes = {".ipynb": "#DA5B0B"}
 
 
 @lru_cache
-def extension_to_colors() -> Dict[str, str]:
-    extension_to_color = {}
+def github_languages_config() -> Dict[str, Dict]:
     with open(GITHUB_LANGUAGES_PATH) as file:
         logger.debug("Loading github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
         yaml_loader = yaml.CLoader if yaml.__with_libyaml__ else yaml.Loader
@@ -22,14 +22,33 @@ def extension_to_colors() -> Dict[str, str]:
             logger.warning("Using slow yaml parser (0.5s vs 0.1s)!")
         github_languages = yaml.load(file, Loader=yaml_loader)
         logger.debug("Loaded github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
-        for language, data in github_languages.items():
-            if "color" in data and "extensions" in data and data["type"] == "programming" and language not in excludes:
-                for extension in data["extensions"]:
-                    extension_to_color[extension.lower()] = data["color"]
+        return github_languages
+
+
+@lru_cache
+def extension_to_colors() -> Dict[str, str]:
+    extension_to_color = {}
+    for language, data in github_languages_config().items():
+        if "color" in data and "extensions" in data and data["type"] == "programming" and language not in excludes:
+            for extension in data["extensions"]:
+                extension_to_color[extension.lower()] = data["color"]
 
     extension_to_color.update(includes)
 
     return extension_to_color
+
+
+@lru_cache
+def extension_to_programming_language() -> Dict[str, str]:
+    extension_to_language = {}
+    for language, data in github_languages_config().items():
+        if "extensions" in data and data["type"] == "programming" and language not in excludes:
+            for extension in data["extensions"]:
+                extension_to_language[extension.lower()] = language
+
+    extension_to_language.update(includes)
+
+    return extension_to_language
 
 
 def darker_color(c: Tuple[int, int, int, int]) -> Tuple[int, int, int, int]:
