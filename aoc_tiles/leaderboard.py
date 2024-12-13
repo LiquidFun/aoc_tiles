@@ -2,6 +2,7 @@ import itertools
 import re
 import time
 from dataclasses import dataclass, fields
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Union, Dict, List, Set
 
@@ -44,6 +45,12 @@ def _parse_leaderboard(leaderboard_path: Path) -> Dict[int, DayScores]:
         return day_to_scores
 
 
+def _is_year_already_unlocked(year: int) -> bool:
+    unlock_time = datetime(year, 12, 1, 5, 0, tzinfo=timezone.utc)
+    curr_time = datetime.now(timezone.utc)
+    return unlock_time <= curr_time
+
+
 def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
     leaderboard_path = config.cache_dir / f"leaderboard{year}.html"
     if leaderboard_path.exists():
@@ -56,6 +63,10 @@ def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
         if has_no_none_values and len(leaderboard) == 25:
             print(f"Leaderboard for {year} is complete, no need to download.")
             return leaderboard
+
+    if not _is_year_already_unlocked(year):
+        print(f"Advent of Code {year} has not unlocked yet, skipping leaderboard retrieval.")
+        return {}
 
     with open(config.session_cookie_path) as cookie_file:
         session_cookie = cookie_file.read().strip()

@@ -120,7 +120,7 @@ class TileMaker:
             stars = sum(year_data.day_to_stars.values())
             daily_language = " - " + "/".join(self._get_programming_languages_used_daily(year_data))
             html.push(f"{year} - {stars} ⭐{daily_language}")
-        max_solved_day = max(day for day, stars in year_data.day_to_stars.items() if stars > 0)
+        max_solved_day = max((day for day, stars in year_data.day_to_stars.items() if stars > 0), default=0)
         max_day = 25 if self.config.create_all_days else max_solved_day
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
 
