@@ -16,7 +16,7 @@ class Config:
     image_dir: Union[str, Path] = field(init=False)
     cache_dir: Union[str, Path] = field(init=False)
 
-    verbose: bool = field(default=False, metadata={"help": "Whether to print debug information."})
+    verbosity: int = field(default=0, metadata={"help": "Debug information level: 1=INFO, 2=DEBUG, 3=TRACE."})
 
     what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
         default="auto", metadata={
@@ -155,7 +155,8 @@ class Config:
                 self.language_sorting[i] = "." + suffix
 
         logger.remove()
-        if self.verbose:
-            logger.add(sys.stderr, level="DEBUG")
+        if self.verbosity > 0:
+            level = [None, "INFO", "DEBUG", "TRACE"][min(self.verbosity, 3)]
+            logger.add(sys.stderr, level=level)
 
         logger.debug(self)

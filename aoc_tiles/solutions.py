@@ -72,6 +72,7 @@ class SolutionFinder:
             files = list(directory.rglob("*"))
 
         logger.debug("Found {} files", len(files))
+        logger.trace(f"Files: {files}")
         solution_paths = []
         for path in files:
             extension_is_supported = path.suffix in extension_to_colors()
@@ -81,6 +82,7 @@ class SolutionFinder:
             if path.is_file() and extension_is_supported and not path_is_excluded:
                 solution_paths.append(path)
         logger.debug("Found {} solution files", len(solution_paths))
+        logger.trace("Solution files:", '\n'.join(map(str, solution_paths)))
         return solution_paths
 
     def git_is_file_ignored(self, filepath):
