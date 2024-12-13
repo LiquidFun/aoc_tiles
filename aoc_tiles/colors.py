@@ -10,7 +10,7 @@ GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.
 
 # Until someone complains, I'll exclude languages which conflict with my language extensions
 excludes = ["GCC Machine Description", "Standard ML"]
-includes = {".ipynb": "#DA5B0B"}
+overrides = {"Jupyter Notebook": {"type": "programming"}}
 
 
 @lru_cache
@@ -22,6 +22,12 @@ def github_languages_config() -> Dict[str, Dict]:
             logger.warning("Using slow yaml parser (0.5s vs 0.1s)!")
         github_languages = yaml.load(file, Loader=yaml_loader)
         logger.debug("Loaded github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
+
+        for language, override_dict in overrides.items():
+            if language not in github_languages:
+                github_languages[language] = {}
+            github_languages[language].update(override_dict)
+
         return github_languages
 
 
@@ -33,8 +39,6 @@ def extension_to_colors() -> Dict[str, str]:
             for extension in data["extensions"]:
                 extension_to_color[extension.lower()] = data["color"]
 
-    extension_to_color.update(includes)
-
     return extension_to_color
 
 
@@ -45,8 +49,6 @@ def extension_to_programming_language() -> Dict[str, str]:
         if "extensions" in data and data["type"] == "programming" and language not in excludes:
             for extension in data["extensions"]:
                 extension_to_language[extension.lower()] = language
-
-    extension_to_language.update(includes)
 
     return extension_to_language
 
