@@ -53,6 +53,11 @@ def _is_year_already_unlocked(year: int) -> bool:
 
 def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
     leaderboard_path = config.cache_dir / f"leaderboard{year}.html"
+
+    if not _is_year_already_unlocked(year):
+        print(f"Advent of Code {year} has not unlocked yet, skipping leaderboard retrieval.")
+        return {}
+
     if leaderboard_path.exists():
         leaderboard = _parse_leaderboard(leaderboard_path)
         less_than_30mins = time.time() - leaderboard_path.lstat().st_mtime < 60 * 30
@@ -63,10 +68,6 @@ def request_leaderboard(year: int, config: Config) -> Dict[int, DayScores]:
         if has_no_none_values and len(leaderboard) == 25:
             print(f"Leaderboard for {year} is complete, no need to download.")
             return leaderboard
-
-    if not _is_year_already_unlocked(year):
-        print(f"Advent of Code {year} has not unlocked yet, skipping leaderboard retrieval.")
-        return {}
 
     with open(config.session_cookie_path) as cookie_file:
         session_cookie = cookie_file.read().strip()
