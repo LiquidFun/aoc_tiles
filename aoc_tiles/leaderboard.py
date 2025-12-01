@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Union, Dict, List, Set
 
+from loguru import logger
 import requests
 
 from aoc_tiles.config import Config
@@ -26,18 +27,26 @@ class DayScores:
 
 def _parse_leaderboard(leaderboard_path: Path) -> Dict[int, DayScores]:
     no_stars = "You haven't collected any stars... yet."
-    start = '<span class="leaderboard-daydesc-both"> *Time *Rank *Score</span>\n'
+    start = r'<span class="leaderboard-daydesc-both">(?: *Time *Rank *Score|-Part 2-)</span>\n'
     end = "</pre>"
     with open(leaderboard_path) as file:
         html = file.read()
+        logger.debug(f"Found html file: {leaderboard_path}")
+        logger.trace(f"With contents: {html}")
         if no_stars in html:
             return {}
         matches = re.findall(rf"{start}(.*?){end}", html, re.DOTALL | re.MULTILINE)
         assert len(matches) == 1, f"Found {'no' if len(matches) == 0 else 'more than one'} leaderboard?!"
+        print(matches)
         table_rows = matches[0].strip().split("\n")
         day_to_scores = {}
         for line in table_rows:
             day, *scores = re.split(r"\s+", line.strip())
+            if len(scores) in (1, 2):
+                # In year 2025 there is no longer any info about rank/score, therefore we just pad it with None
+                if len(scores) == 1:
+                    scores.append(None)
+                scores = [scores[0], None, None, scores[1], None, None]
             # replace "-" with None to be able to handle the data later, like if no score existed for the day
             scores = [s if s != "-" else None for s in scores]
             assert len(scores) in (3, 6), f"Number scores for {day=} ({scores}) are not 3 or 6."

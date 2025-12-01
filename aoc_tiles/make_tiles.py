@@ -37,7 +37,7 @@ class TileMaker:
         self.solution_finder = SolutionFinder(config)
 
     def _get_stars(self, solved: DayScores, solution: List[Path]):
-        on_leaderboard = 0 if solved is None else bool(solved.rank1) + bool(solved.rank2)
+        on_leaderboard = 0 if solved is None else bool(solved.time1) + bool(solved.time2)
         file_exists = 0 if solution is None else 2
         return {
             "on_leaderboard": on_leaderboard,

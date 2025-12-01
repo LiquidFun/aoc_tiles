@@ -83,9 +83,10 @@ class TileDrawer:
 
                 elif self.config.what_to_show_on_right_side == "time_and_rank":
                     draw_text((105, 25 + y), "time", align="right", font=secondary_font(10))
-                    draw_text((105, 35 + y), "rank", align="right", font=secondary_font(10))
                     draw_text((143, 3 + y), format_time(time), align="right", font=secondary_font(18))
-                    draw_text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18))
+                    if rank:
+                        draw_text((105, 35 + y), "rank", align="right", font=secondary_font(10))
+                        draw_text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18))
 
                 elif self.config.what_to_show_on_right_side == "loc":
                     raise NotImplementedError("loc is not implemented yet")
