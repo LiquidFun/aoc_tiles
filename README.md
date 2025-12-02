@@ -7,10 +7,16 @@ A tile is an image which represents both parts of a day, it looks like this:
 
 It uses the personal [AoC Leaderboard](https://adventofcode.com/2023/leaderboard/self) to get the data for each day using your cookie. 
 
+## Updating old installations
+
+1. Update the version of aoc_tiles to the **newest** one, see github release or tags
+2. Update your session.cookie (take it from the browser storage)
+3. Delete cache in .aoc_tiles/cache
+4. Run it with `pre-commit run --hook post-commit` or make a commit
 
 ## Installation
 
-For this year (2023) I have rewritten this script to make it a lot easier to use. 
+I have rewritten this script to make it a lot easier to use. 
 Now you **only** need to install `pre-commit`, add a pre-commit hook and add two HTML comments to your README. More details below.
 
 ### Install `pre-commit`:
@@ -34,7 +40,7 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.6.2
+      rev: 0.6.4
       hooks:
           - id: aoc-tiles
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
