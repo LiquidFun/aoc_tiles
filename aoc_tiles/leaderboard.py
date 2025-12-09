@@ -37,7 +37,6 @@ def _parse_leaderboard(leaderboard_path: Path) -> Dict[int, DayScores]:
             return {}
         matches = re.findall(rf"{start}(.*?){end}", html, re.DOTALL | re.MULTILINE)
         assert len(matches) == 1, f"Found {'no' if len(matches) == 0 else 'more than one'} leaderboard?!"
-        print(matches)
         table_rows = matches[0].strip().split("\n")
         day_to_scores = {}
         for line in table_rows:

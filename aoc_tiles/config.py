@@ -18,6 +18,15 @@ class Config:
 
     verbosity: int = field(default=0, metadata={"help": "Debug information level: 1=INFO, 2=DEBUG, 3=TRACE."})
 
+    theme: Literal["modern", "aoc"] = field(
+        default="modern",
+        metadata={
+            "help": "Visual theme for the tiles. "
+                    "'modern' uses the current colorful design with PaytoneOne font. "
+                    "'aoc' uses a retro terminal style similar to Advent of Code website."
+        }
+    )
+
     what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
         default="auto", metadata={
             "help": "What information to display on the right side of each tile. "
