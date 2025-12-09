@@ -3,6 +3,12 @@
 This script creates a graphic for each day for each year of the Advent of Code. 
 A tile is an image which represents both parts of a day, it looks like this:
 
+Theme: `aoc`
+
+![AoC Tiles](./examples/aoc-theme.mp4)
+
+Theme: `modern`
+
 ![AoC Tiles](examples/showcase.png)
 
 It uses the personal [AoC Leaderboard](https://adventofcode.com/2023/leaderboard/self) to get the data for each day using your cookie. 
@@ -40,7 +46,7 @@ Add this pre-commit hook to your `.pre-commit-config.yaml` (create it, if you do
 ```yaml
 repos:
     - repo: https://github.com/LiquidFun/aoc_tiles
-      rev: 0.6.4
+      rev: 0.7.0
       hooks:
           - id: aoc-tiles
             # Optionally use these arguments. Auto add tiles to git adds the tiles to git,
@@ -53,6 +59,8 @@ repos:
             #     - --auto-add-tiles-to-git=amend
             #     - --language-sorting=jl,kt,py,rs
             #     - --exclude-patterns=2021/*/*.apl,2021/*/*.py,2021/*/*.cpp
+            #     - --theme=aoc
+            #     - --animation=snow
 ```
 
 Now **install** the hook with:
@@ -118,6 +126,16 @@ with examples showing how it changes the look.
 ### All Flags
 
 ```
+
+  --theme THEME
+    Visual theme for the tiles. 'modern' uses the current colorful design with PaytoneOne font. 
+    'aoc' uses a retro terminal style similar to Advent of Code website. 
+    Possible values: [modern,aoc] Default: "modern"
+
+  --animation ANIMATION
+    Animation to apply to tiles. 'none' creates static PNG images. 'snow' creates animated GIFs with falling
+    snow effect. Possible values: [none,snow] Default: "none"
+
   --what-to-show-on-right-side WHAT_TO_SHOW_ON_RIGHT_SIDE
     What information to display on the right side of each tile. 'checkmark' only displays a checkmark for each
     part if the day is solved. 'time_and_rank' displays the time and rank on the global leaderboard (requires
