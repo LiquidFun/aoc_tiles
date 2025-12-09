@@ -5,7 +5,7 @@ A tile is an image which represents both parts of a day, it looks like this:
 
 Theme: `aoc`
 
-![AoC Tiles](./examples/aoc-theme.mp4)
+https://github.com/user-attachments/assets/aab5ef1a-36be-4d62-8252-1a7e4775d4f3
 
 Theme: `modern`
 
