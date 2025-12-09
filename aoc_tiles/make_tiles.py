@@ -88,7 +88,8 @@ class TileMaker:
             if extension in extension_to_colors() and extension not in languages:
                 languages.append(extension)
         solution_link = solutions[0] if solutions else None
-        day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}.png"
+        img_extension = ".gif" if self.config.animation != "none" else ".png"
+        day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}{img_extension}"
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
             self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, stars=stars)

@@ -27,6 +27,15 @@ class Config:
         }
     )
 
+    animation: Literal["none", "snow"] = field(
+        default="none",
+        metadata={
+            "help": "Animation to apply to tiles. "
+                    "'none' creates static PNG images. "
+                    "'snow' creates animated GIFs with falling snow effect."
+        }
+    )
+
     what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
         default="auto", metadata={
             "help": "What information to display on the right side of each tile. "
