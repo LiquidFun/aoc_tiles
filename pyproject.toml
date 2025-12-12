@@ -1,6 +1,6 @@
 [project]
 name = "aoc-tiles"
-version = "0.7.0"
+dynamic = ["version"]
 description = "Fancy Advent of Code README tiles showing the completion status of the challenges per day"
 authors = [{ name = "Brutenis Gliwa,", email = "brutenis@gmail.com" }]
 requires-python = ">=3.8"
@@ -20,5 +20,11 @@ aoc-tiles = "aoc_tiles.cli:main"
 aoctiles = "aoc_tiles.cli:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+dirty = true
