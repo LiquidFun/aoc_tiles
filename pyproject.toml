@@ -1,25 +1,24 @@
-[tool.poetry]
+[project]
 name = "aoc-tiles"
 version = "0.7.0"
 description = "Fancy Advent of Code README tiles showing the completion status of the challenges per day"
-authors = ["Brutenis Gliwa, <brutenis@gmail.com>"]
-license = "Apache-2.0"
+authors = [{ name = "Brutenis Gliwa,", email = "brutenis@gmail.com" }]
+requires-python = ">=3.8"
 readme = "README.md"
+license = "Apache-2.0"
+dependencies = [
+    "pillow>=10.1.0,<11",
+    "requests>=2.31.0,<3",
+    "pyyaml>=6.0.1,<7",
+    "rich>=13.7.0,<14",
+    "gitpython>=3.1.40,<4",
+    "loguru>=0.7.2,<0.8",
+]
 
-[tool.poetry.scripts]
-aoc-tiles = 'aoc_tiles.cli:main'
-aoctiles = 'aoc_tiles.cli:main'
-
-[tool.poetry.dependencies]
-python = ">=3.8"
-pillow = "^10.1.0"
-requests = "^2.31.0"
-pyyaml = "^6.0.1"
-rich = "^13.7.0"
-gitpython = "^3.1.40"
-loguru = "^0.7.2"
-
+[project.scripts]
+aoc-tiles = "aoc_tiles.cli:main"
+aoctiles = "aoc_tiles.cli:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
