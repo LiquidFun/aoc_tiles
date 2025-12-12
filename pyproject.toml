@@ -28,3 +28,4 @@ source = "uv-dynamic-versioning"
 
 [tool.uv-dynamic-versioning]
 dirty = true
+pattern = "^(?P<base>\\d+\\.\\d+\\.\\d+.*)$"
