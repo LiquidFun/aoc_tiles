@@ -52,12 +52,7 @@ class SnowAnimation(Animation):
         loop_height = height + 20  # Total height including off-screen
 
         # Use path (contains year/day) as seed for consistent but unique snow per tile
-        # Every 5th day shares the same seed (1=6=11=16=21, 2=7=12=17=22, etc.)
-        # Path is like: .aoc_tiles/tiles/2024/01.gif
-        day_num = int(path.stem)  # "01" -> 1
-        year = int(path.parent.name)  # "2024" -> 2024
-        position_in_row = (day_num - 1) % 5  # 0-4 based on column position
-        seed = year * 10 + position_in_row
+        seed = sum(ord(c) * (i + 1) for i, c in enumerate(str(path)))
         random.seed(seed)
         flakes = []
         for _ in range(self.num_flakes):
