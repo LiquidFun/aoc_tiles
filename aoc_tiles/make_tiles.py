@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 from loguru import logger
 
 from aoc_tiles.colors import extension_to_colors, extension_to_programming_language
-from aoc_tiles.config import Config
+from aoc_tiles.config import Config, TILE_WIDTH_SINCE_2025, TILE_WIDTH_PRE_2025
 from aoc_tiles.drawer import TileDrawer
 from aoc_tiles.html import HTML
 from aoc_tiles.leaderboard import DayScores, request_leaderboard
@@ -37,7 +37,9 @@ class TileMaker:
         self.solution_finder = SolutionFinder(config)
 
     def _get_stars(self, solved: DayScores, solution: List[Path]):
-        on_leaderboard = 0 if solved is None else bool(solved.time1) + bool(solved.time2)
+        on_leaderboard = (
+            0 if solved is None else bool(solved.time1) + bool(solved.time2)
+        )
         file_exists = 0 if solution is None else 2
         return {
             "on_leaderboard": on_leaderboard,
@@ -47,7 +49,9 @@ class TileMaker:
         }[self.config.count_as_solved_when]
 
     def compose_solve_data(self) -> SolveData:
-        solution_paths_by_year = self.solution_finder.get_solution_paths_by_year(self.config.aoc_dir)
+        solution_paths_by_year = self.solution_finder.get_solution_paths_by_year(
+            self.config.aoc_dir
+        )
         years = solution_paths_by_year.keys()
 
         is_leaderboard_needed = self.config.what_to_show_on_right_side in [
@@ -66,10 +70,14 @@ class TileMaker:
             day_to_stars = {}
 
             for day in range(1, 26):
-                stars = self._get_stars(day_to_scores.get(day), day_to_solution.get(day))
+                stars = self._get_stars(
+                    day_to_scores.get(day), day_to_solution.get(day)
+                )
                 day_to_stars[day] = stars
 
-            solve_data.year_to_data[year] = YearData(day_to_scores, day_to_solution, day_to_stars)
+            solve_data.year_to_data[year] = YearData(
+                day_to_scores, day_to_solution, day_to_stars
+            )
         return solve_data
 
     def handle_day(
@@ -92,11 +100,15 @@ class TileMaker:
         day_graphic_path = self.config.image_dir / f"{year:04}/{day:02}{img_extension}"
         day_graphic_path.parent.mkdir(parents=True, exist_ok=True)
         if not day_graphic_path.exists() or needs_update:
-            self.tile_drawer.draw_tile(f"{day:02}", languages, day_scores, day_graphic_path, stars=stars)
+            self.tile_drawer.draw_tile(
+                f"{day:02}", languages, day_scores, day_graphic_path, stars=stars
+            )
         day_graphic_path = day_graphic_path.relative_to(self.config.aoc_dir)
         return day_graphic_path, solution_link
 
-    def fill_empty_days_in_dict(self, day_to_solutions: Dict[int, List[Path]], max_day) -> None:
+    def fill_empty_days_in_dict(
+        self, day_to_solutions: Dict[int, List[Path]], max_day
+    ) -> None:
         if not self.config.create_all_days and len(day_to_solutions) == 0:
             print("Current year has no solutions!")
         for day in range(1, max_day + 1):
@@ -111,7 +123,9 @@ class TileMaker:
                 extensions = suffixes
             extensions &= suffixes
 
-        return [extension_to_programming_language()[extension] for extension in extensions]
+        return [
+            extension_to_programming_language()[extension] for extension in extensions
+        ]
 
     def handle_year(self, year: int, year_data: YearData, html: HTML):
         print(f"=== Generating table for year {year} ===")
@@ -119,7 +133,9 @@ class TileMaker:
         day_to_solutions = year_data.day_to_paths
         with html.tag("h1", align="center"):
             stars = sum(year_data.day_to_stars.values())
-            daily_language = " - " + "/".join(self._get_programming_languages_used_daily(year_data))
+            daily_language = " - " + "/".join(
+                self._get_programming_languages_used_daily(year_data)
+            )
             html.push(f"{year} - {stars} ⭐{daily_language}")
         max_solved_day = max(
             (day for day, stars in year_data.day_to_stars.items() if stars > 0),
@@ -158,12 +174,18 @@ class TileMaker:
             else:
                 solution_href = str(solution_path.as_posix())
 
+            tile_width = self.config.tile_width_px
+            if tile_width == "auto":
+                tile_width = (
+                    TILE_WIDTH_SINCE_2025 if year >= 2025 else TILE_WIDTH_PRE_2025
+                )
+
             with html.tag("a", href=solution_href):
                 html.tag(
                     "img",
                     closing=False,
                     src=tile_path.as_posix(),
-                    width=self.config.tile_width_px,
+                    width=tile_width,
                 )
 
         # with open(completed_cache_path, "w") as file:
@@ -175,7 +197,9 @@ class TileMaker:
     def _ensure_is_not_running_already(self):
         if self.config.aoc_tiles_dir.exists():
             if self.config.running_lock_path in self.config.aoc_tiles_dir.iterdir():
-                print("AoC-Tiles is already running! Remove running.lock if this is not the case.")
+                print(
+                    "AoC-Tiles is already running! Remove running.lock if this is not the case."
+                )
                 exit()
 
     def _write_to_readme(self, html: HTML):
@@ -198,7 +222,9 @@ class TileMaker:
         total = 0
         for year in range(2015, utc_date.year + 2):
             for day in range(1, 26):
-                unlock_time = datetime.datetime(year, 12, day, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)
+                unlock_time = datetime.datetime(
+                    year, 12, day, 0, 0, 0, 0, tzinfo=datetime.timezone.utc
+                )
                 if utc_date >= unlock_time:
                     total += 2
         return total
@@ -210,8 +236,13 @@ class TileMaker:
             and len(solve_data.year_to_data) >= 3
         )
         if add_header:
-            total_stars = sum(sum(data.day_to_stars.values()) for data in solve_data.year_to_data.values())
-            total_possible_stars = self._get_total_possible_stars_for_date(datetime.datetime.now(datetime.timezone.utc))
+            total_stars = sum(
+                sum(data.day_to_stars.values())
+                for data in solve_data.year_to_data.values()
+            )
+            total_possible_stars = self._get_total_possible_stars_for_date(
+                datetime.datetime.now(datetime.timezone.utc)
+            )
             with html.tag("h1", align="center"):
                 html.push(f"Advent of Code - {total_stars}/{total_possible_stars} ⭐")
 

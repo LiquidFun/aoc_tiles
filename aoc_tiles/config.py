@@ -6,10 +6,16 @@ from typing import Literal, List, Tuple, Union
 from PIL import ImageColor
 from loguru import logger
 
+TILE_WIDTH_PRE_2025 = "161px"
+# Due to the new 12 days limit, we want to layout the tiles as 4x3 instead of 2x5 + 2
+TILE_WIDTH_SINCE_2025 = "203px"
+
 
 @dataclass
 class Config:
-    aoc_dir: Union[str, Path] = field(default="./", metadata={"help": "Path to the AoC directory.", "type": str})
+    aoc_dir: Union[str, Path] = field(
+        default="./", metadata={"help": "Path to the AoC directory.", "type": str}
+    )
     readme_path: Union[str, Path] = field(init=False)
     session_cookie_path: Union[str, Path] = field(init=False)
     aoc_tiles_dir: Union[str, Path] = field(init=False)
@@ -39,17 +45,21 @@ class Config:
         },
     )
 
-    what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
-        default="auto",
-        metadata={
-            "help": "What information to display on the right side of each tile. "
-            "'checkmark' only displays a checkmark for each part if the day is solved. "
-            "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
-            "'loc' displays the number of lines of code of the solution (not implemented). "
-            "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."
-        },
+    what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = (
+        field(
+            default="auto",
+            metadata={
+                "help": "What information to display on the right side of each tile. "
+                "'checkmark' only displays a checkmark for each part if the day is solved. "
+                "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
+                "'loc' displays the number of lines of code of the solution (not implemented). "
+                "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."
+            },
+        )
     )
-    count_as_solved_when: Literal["auto", "on_leaderboard", "file_exists", "either", "both"] = field(
+    count_as_solved_when: Literal[
+        "auto", "on_leaderboard", "file_exists", "either", "both"
+    ] = field(
         default="auto",
         metadata={
             "help": "Condition to count a task as solved. Note that 'on_leaderboard', 'either' and 'both' require a "
@@ -135,7 +145,9 @@ class Config:
     )
     contrast_improvement_threshold: int = field(
         default=30,
-        metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."},
+        metadata={
+            "help": "Threshold for contrast improvement feature (between 0 and 255)."
+        },
     )
     outline_color: Union[str, Tuple] = field(
         default="#6C6A6A",
@@ -148,26 +160,40 @@ class Config:
     top100_color: Union[str, Tuple] = field(
         default="#ffdd00",
         metadata={
-            "help": "Color to highlight top 100 ranking. Only used if sessioncookie is provided.",
+            "help": "Color to highlight top 100 ranking. Only used if session cookie is provided.",
             "type": str,
         },
     )
-    text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
+    text_color: Union[str, Tuple] = field(
+        default="#FFFFFF", metadata={"help": "Text color.", "type": str}
+    )
 
     tile_width_px: str = field(
-        default="161px",
-        metadata={"help": "Width of tiles in pixels. You likely don't needto change this."},
+        default="auto",
+        metadata={
+            "help": f"Width of tiles in pixels. You likely don't need to change this. "
+            f"'auto' uses '{TILE_WIDTH_PRE_2025}' for years before 2025 "
+            f"and '{TILE_WIDTH_SINCE_2025}' since 2025."
+        },
     )
 
     def __post_init__(self):
         self.aoc_dir = Path(self.aoc_dir)
 
         if not hasattr(self, "readme_path"):
-            readmes = [path for path in self.aoc_dir.iterdir() if path.name.lower() == "readme.md"]
+            readmes = [
+                path
+                for path in self.aoc_dir.iterdir()
+                if path.name.lower() == "readme.md"
+            ]
             if len(readmes) == 0:
-                exit(f"[ERROR] No README.md found in the root directory of the repository '{self.aoc_dir}'.")
+                exit(
+                    f"[ERROR] No README.md found in the root directory of the repository '{self.aoc_dir}'."
+                )
             elif len(readmes) > 1:
-                exit(f"[ERROR] Multiple README.md files found in the root directory of the repository {readmes}.")
+                exit(
+                    f"[ERROR] Multiple README.md files found in the root directory of the repository {readmes}."
+                )
             self.readme_path = readmes[0]
 
         if not hasattr(self, "aoc_tiles_dir"):
@@ -188,10 +214,14 @@ class Config:
             self.cache_dir = self.aoc_tiles_dir / "cache"
 
         if self.count_as_solved_when == "auto":
-            self.count_as_solved_when = "both" if self.session_cookie_path.exists() else "file_exists"
+            self.count_as_solved_when = (
+                "both" if self.session_cookie_path.exists() else "file_exists"
+            )
 
         if self.what_to_show_on_right_side == "auto":
-            self.what_to_show_on_right_side = "time_and_rank" if self.session_cookie_path.exists() else "checkmark"
+            self.what_to_show_on_right_side = (
+                "time_and_rank" if self.session_cookie_path.exists() else "checkmark"
+            )
 
         self.outline_color = ImageColor.getrgb(self.outline_color)
         self.not_completed_color = ImageColor.getrgb(self.not_completed_color)
