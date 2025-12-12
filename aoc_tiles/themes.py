@@ -2,7 +2,7 @@
 
 Provides different visual styles for the generated tiles.
 """
-import random
+
 from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
@@ -11,7 +11,7 @@ from typing import List, Tuple, Union
 from PIL import Image, ImageColor, ImageDraw
 
 from aoc_tiles.colors import color_similarity, darker_color, extension_to_colors
-from aoc_tiles.fonts import main_font, secondary_font, get_font, FONTS_PATH
+from aoc_tiles.fonts import main_font, secondary_font
 from aoc_tiles.leaderboard import DayScores
 
 
@@ -41,7 +41,7 @@ class Theme(ABC):
         languages: List[str],
         day_scores: Union[DayScores, None],
         path: Path,
-        stars: int
+        stars: int,
     ) -> None:
         """Draw a tile and save it to the given path."""
         pass
@@ -61,7 +61,7 @@ class ModernTheme(Theme):
         languages: List[str],
         day_scores: Union[DayScores, None],
         path: Path,
-        stars: int
+        stars: int,
     ) -> None:
         """Saves a graphic for a given day and year. Returns the path to it."""
         image = self._get_alternating_background(languages, stars == 2)
@@ -72,7 +72,11 @@ class ModernTheme(Theme):
         # If yes, add outline
         for language in languages:
             color = ImageColor.getrgb(extension_to_colors()[language])
-            if color_similarity(color, self.config.text_color, self.config.contrast_improvement_threshold):
+            if color_similarity(
+                color,
+                self.config.text_color,
+                self.config.contrast_improvement_threshold,
+            ):
                 if "outline" in self.config.contrast_improvement_type:
                     text_kwargs["stroke_width"] = 1
                     text_kwargs["stroke_fill"] = self.config.outline_color
@@ -110,10 +114,25 @@ class ModernTheme(Theme):
 
                 elif self.config.what_to_show_on_right_side == "time_and_rank":
                     draw_text((105, 25 + y), "time", align="right", font=secondary_font(10))
-                    draw_text((143, 3 + y), format_time(time), align="right", font=secondary_font(18))
+                    draw_text(
+                        (143, 3 + y),
+                        format_time(time),
+                        align="right",
+                        font=secondary_font(18),
+                    )
                     if rank:
-                        draw_text((105, 35 + y), "rank", align="right", font=secondary_font(10))
-                        draw_text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18))
+                        draw_text(
+                            (105, 35 + y),
+                            "rank",
+                            align="right",
+                            font=secondary_font(10),
+                        )
+                        draw_text(
+                            (133, 23 + y),
+                            f"{rank:>6}",
+                            align="right",
+                            font=secondary_font(18),
+                        )
 
                 elif self.config.what_to_show_on_right_side == "loc":
                     raise NotImplementedError("loc is not implemented yet")
@@ -145,7 +164,13 @@ class ModernTheme(Theme):
                         continue
                     image.load()[x, y] = colors[((x + y) // stripe_width) % len(colors)]
 
-        fill_with_colors([self.config.not_completed_color, darker_color(self.config.not_completed_color)], False)
+        fill_with_colors(
+            [
+                self.config.not_completed_color,
+                darker_color(self.config.not_completed_color),
+            ],
+            False,
+        )
         if colors:
             fill_with_colors(colors, not both_parts_completed)
         return image
@@ -209,8 +234,16 @@ class AocTheme(Theme):
             int(self.AOC_BG_BASE[2] * (1 - factor) + color[2] * factor),
         )
 
-    def _draw_glowing_text(self, image: Image.Image, pos: Tuple[int, int], text: str,
-                           color: Tuple[int, int, int], font, glow_size: int = 5, glow_alpha: int = 255):
+    def _draw_glowing_text(
+        self,
+        image: Image.Image,
+        pos: Tuple[int, int],
+        text: str,
+        color: Tuple[int, int, int],
+        font,
+        glow_size: int = 5,
+        glow_alpha: int = 255,
+    ):
         """Draw text with a soft glow effect using RGBA compositing."""
         from PIL import ImageFilter
 
@@ -244,7 +277,7 @@ class AocTheme(Theme):
         languages: List[str],
         day_scores: Union[DayScores, None],
         path: Path,
-        stars: int
+        stars: int,
     ) -> None:
         """Draw an AoC-themed tile."""
         lang_color = self._get_language_color(languages)
@@ -271,14 +304,22 @@ class AocTheme(Theme):
         star_text = "*" * stars if stars > 0 else "--"
         # Right-align stars at x=190
         star_x = 165 if stars == 2 else 178
-        self._draw_glowing_text(image, (star_x, 5), star_text, star_color, mono_font(22), glow_size=5, glow_alpha=60)
+        self._draw_glowing_text(
+            image,
+            (star_x, 5),
+            star_text,
+            star_color,
+            mono_font(22),
+            glow_size=5,
+            glow_alpha=60,
+        )
 
         # Draw horizontal separator
         drawer.line((5, 35, 195, 35), fill=self.AOC_TEXT_DIM, width=2)
 
         # Draw language info - use GitHub language color, brighter, with glow
         if languages:
-            lang_str = " ".join(lang.lstrip('.') for lang in languages)
+            lang_str = " ".join(lang.lstrip(".") for lang in languages)
             if len(lang_str) > 18:
                 lang_str = lang_str[:15] + "..."
             self._draw_glowing_text(image, (8, 38), f"[{lang_str}]", lang_color, mono_font(14))
@@ -304,13 +345,24 @@ class AocTheme(Theme):
                     if rank:
                         # Right-align rank to match stars position (end at ~190)
                         rank_str = f"#{rank}"
-                        self._draw_glowing_text(image, (124, y_offset), f"{rank_str:>8}", rank_color, mono_font(14))
+                        self._draw_glowing_text(
+                            image,
+                            (124, y_offset),
+                            f"{rank_str:>8}",
+                            rank_color,
+                            mono_font(14),
+                        )
                 else:
                     # Checkmark style
                     self._draw_glowing_text(image, (10, y_offset), f"P{part}: ", part_color, mono_font(14))
                     self._draw_glowing_text(image, (50, y_offset), "[OK]", self.AOC_GREEN, mono_font(14))
             else:
-                drawer.text((10, y_offset), f"P{part}: ", fill=self.AOC_TEXT_DIM, font=mono_font(14))
+                drawer.text(
+                    (10, y_offset),
+                    f"P{part}: ",
+                    fill=self.AOC_TEXT_DIM,
+                    font=mono_font(14),
+                )
                 drawer.text((50, y_offset), "[--]", fill=self.AOC_TEXT_DIM, font=mono_font(14))
 
         image.save(path)
@@ -338,9 +390,9 @@ class AocTheme(Theme):
 
     # AoC Christmas light colors (brighter for background)
     XMAS_COLORS = [
-        (120, 50, 50),   # Red
-        (50, 120, 50),   # Green
-        (50, 50, 120),   # Blue
+        (120, 50, 50),  # Red
+        (50, 120, 50),  # Green
+        (50, 50, 120),  # Blue
         (120, 120, 50),  # Yellow
     ]
 
@@ -364,7 +416,7 @@ class AocTheme(Theme):
 
         # Create a consistent color mapping for each character based on seed
         char_color_map = {}
-        all_chars = sorted(set(c for line in pattern for c in line if c != ' '))
+        all_chars = sorted(set(c for line in pattern for c in line if c != " "))
         for i, char in enumerate(all_chars):
             char_color_map[char] = self.XMAS_COLORS[(seed + ord(char)) % len(self.XMAS_COLORS)]
 
@@ -382,13 +434,16 @@ class AocTheme(Theme):
             for tile_x in range(-tile_width, image.width + tile_width, tile_width):
                 for line_idx, line in enumerate(pattern):
                     for char_idx, char in enumerate(line):
-                        if char != ' ':
+                        if char != " ":
                             color = char_color_map[char]
                             drawer.text(
-                                (tile_x + char_idx * char_width, tile_y + line_idx * char_height),
+                                (
+                                    tile_x + char_idx * char_width,
+                                    tile_y + line_idx * char_height,
+                                ),
                                 char,
                                 fill=color,
-                                font=tiny_font
+                                font=tiny_font,
                             )
 
         # Apply slight blur to the ASCII layer

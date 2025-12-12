@@ -3,7 +3,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 import datetime
 from pathlib import Path
-from typing import Dict, Set, List, Optional, Any
+from typing import Dict, List, Optional
 
 from loguru import logger
 
@@ -73,13 +73,13 @@ class TileMaker:
         return solve_data
 
     def handle_day(
-            self,
-            day: int,
-            year: int,
-            solutions: List[Path],
-            day_scores: Optional[DayScores],
-            needs_update: bool,
-            stars: int,
+        self,
+        day: int,
+        year: int,
+        solutions: List[Path],
+        day_scores: Optional[DayScores],
+        needs_update: bool,
+        stars: int,
     ):
         logger.debug("day={} year={} solutions={}", day, year, solutions)
         languages = []
@@ -98,7 +98,7 @@ class TileMaker:
 
     def fill_empty_days_in_dict(self, day_to_solutions: Dict[int, List[Path]], max_day) -> None:
         if not self.config.create_all_days and len(day_to_solutions) == 0:
-            print(f"Current year has no solutions!")
+            print("Current year has no solutions!")
         for day in range(1, max_day + 1):
             if day not in day_to_solutions:
                 day_to_solutions[day] = []
@@ -121,7 +121,10 @@ class TileMaker:
             stars = sum(year_data.day_to_stars.values())
             daily_language = " - " + "/".join(self._get_programming_languages_used_daily(year_data))
             html.push(f"{year} - {stars} ⭐{daily_language}")
-        max_solved_day = max((day for day, stars in year_data.day_to_stars.items() if stars > 0), default=0)
+        max_solved_day = max(
+            (day for day, stars in year_data.day_to_stars.items() if stars > 0),
+            default=0,
+        )
         max_day = 25 if self.config.create_all_days else max_solved_day
         self.fill_empty_days_in_dict(day_to_solutions, max_day)
 
@@ -136,7 +139,15 @@ class TileMaker:
             for day in range(1, max_day + 1):
                 solutions = day_to_solutions.get(day, [])
                 stars = year_data.day_to_stars[day]
-                future = executor.submit(self.handle_day, day, year, solutions, leaderboard.get(day), True, stars=stars)
+                future = executor.submit(
+                    self.handle_day,
+                    day,
+                    year,
+                    solutions,
+                    leaderboard.get(day),
+                    True,
+                    stars=stars,
+                )
                 day_to_future[day] = future
 
         for day, future in day_to_future.items():
@@ -148,7 +159,12 @@ class TileMaker:
                 solution_href = str(solution_path.as_posix())
 
             with html.tag("a", href=solution_href):
-                html.tag("img", closing=False, src=tile_path.as_posix(), width=self.config.tile_width_px)
+                html.tag(
+                    "img",
+                    closing=False,
+                    src=tile_path.as_posix(),
+                    width=self.config.tile_width_px,
+                )
 
         # with open(completed_cache_path, "w") as file:
         #     completed_days = [day for day, scores in leaderboard.items() if scores.time2 is not None]
@@ -188,8 +204,11 @@ class TileMaker:
         return total
 
     def _add_total_completed_stars_to_html(self, solve_data: SolveData, html: HTML):
-        add_header = self.config.show_total_stars_for_all_years == 'yes' \
-                     or self.config.show_total_stars_for_all_years == 'auto' and len(solve_data.year_to_data) >= 3
+        add_header = (
+            self.config.show_total_stars_for_all_years == "yes"
+            or self.config.show_total_stars_for_all_years == "auto"
+            and len(solve_data.year_to_data) >= 3
+        )
         if add_header:
             total_stars = sum(sum(data.day_to_stars.values()) for data in solve_data.year_to_data.values())
             total_possible_stars = self._get_total_possible_stars_for_date(datetime.datetime.now(datetime.timezone.utc))

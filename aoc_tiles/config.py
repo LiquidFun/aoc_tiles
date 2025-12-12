@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, List, Tuple, Optional, Union
+from typing import Literal, List, Tuple, Union
 
 from PIL import ImageColor
 from loguru import logger
@@ -16,90 +16,112 @@ class Config:
     image_dir: Union[str, Path] = field(init=False)
     cache_dir: Union[str, Path] = field(init=False)
 
-    verbosity: int = field(default=0, metadata={"help": "Debug information level: 1=INFO, 2=DEBUG, 3=TRACE."})
+    verbosity: int = field(
+        default=0,
+        metadata={"help": "Debug information level: 1=INFO, 2=DEBUG, 3=TRACE."},
+    )
 
     theme: Literal["modern", "aoc"] = field(
         default="modern",
         metadata={
             "help": "Visual theme for the tiles. "
-                    "'modern' uses the current colorful design with PaytoneOne font. "
-                    "'aoc' uses a retro terminal style similar to Advent of Code website."
-        }
+            "'modern' uses the current colorful design with PaytoneOne font. "
+            "'aoc' uses a retro terminal style similar to Advent of Code website."
+        },
     )
 
     animation: Literal["none", "snow"] = field(
         default="none",
         metadata={
             "help": "Animation to apply to tiles. "
-                    "'none' creates static PNG images. "
-                    "'snow' creates animated GIFs with falling snow effect."
-        }
+            "'none' creates static PNG images. "
+            "'snow' creates animated GIFs with falling snow effect."
+        },
     )
 
     what_to_show_on_right_side: Literal["auto", "checkmark", "time_and_rank", "loc"] = field(
-        default="auto", metadata={
+        default="auto",
+        metadata={
             "help": "What information to display on the right side of each tile. "
-                    "'checkmark' only displays a checkmark for each part if the day is solved. "
-                    "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
-                    "'loc' displays the number of lines of code of the solution (not implemented). "
-                    "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."}
+            "'checkmark' only displays a checkmark for each part if the day is solved. "
+            "'time_and_rank' displays the time and rank on the global leaderboard (requires session.cookie). "
+            "'loc' displays the number of lines of code of the solution (not implemented). "
+            "'auto' will use 'time_and_rank' if session.cookie exists, otherwise 'checkmark'."
+        },
     )
     count_as_solved_when: Literal["auto", "on_leaderboard", "file_exists", "either", "both"] = field(
         default="auto",
         metadata={
             "help": "Condition to count a task as solved. Note that 'on_leaderboard', 'either' and 'both' require a "
-                    "session cookie. 'auto' will use 'both' if session.cookie exists, otherwise 'file_exists'."
+            "session cookie. 'auto' will use 'both' if session.cookie exists, otherwise 'file_exists'."
         },
     )
     language_sorting: List[str] = field(
         default_factory=list,
         metadata={
             "help": "Preferred language extensions order for sorting. For example 'py,rs,js' will make Python "
-                    "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
+            "solutions appear first, then Rust, then JavaScript, then everything else (alphabetically)."
         },
     )
-    create_all_days: bool = field(default=False, metadata={"help": "Whether to create entries for all days upfront."})
+    create_all_days: bool = field(
+        default=False,
+        metadata={"help": "Whether to create entries for all days upfront."},
+    )
 
-    auto_add_tiles_to_git: Literal["no", "add", "amend"] = field(default="no", metadata={
-        "help": "Whether to automatically add the tile images to git. 'add' will add new files, 'amend' will add "
-                "and amend the commit with the new files. 'no' will not add the files to git."})
-    only_use_solutions_in_git: bool = field(default=True, metadata={
-        "help": "If true, only solutions will be considered which are tracked by git (git added), "
-                "otherwise all solutions will be used. This is useful for example to ignore auto-generated"
-                "files, like '.d' in Rust or '.o' files in C++."})
+    auto_add_tiles_to_git: Literal["no", "add", "amend"] = field(
+        default="no",
+        metadata={
+            "help": "Whether to automatically add the tile images to git. 'add' will add new files, 'amend' will add "
+            "and amend the commit with the new files. 'no' will not add the files to git."
+        },
+    )
+    only_use_solutions_in_git: bool = field(
+        default=True,
+        metadata={
+            "help": "If true, only solutions will be considered which are tracked by git (git added), "
+            "otherwise all solutions will be used. This is useful for example to ignore auto-generated "
+            "files, like '.d' in Rust or '.o' files in C++."
+        },
+    )
 
-    show_total_stars_for_all_years: Literal["no", "auto", "yes"] = field(default="auto", metadata={
-        "help": "Whether to add an additional header in front which shows the total collected stars for all years."
-                "'auto' will only show the header if you have stars in at least 3 separate years. "
-                "'yes' will always show the header. 'no' will never show the header."})
+    show_total_stars_for_all_years: Literal["no", "auto", "yes"] = field(
+        default="auto",
+        metadata={
+            "help": "Whether to add an additional header in front which shows the total collected stars for all years."
+            "'auto' will only show the header if you have stars in at least 3 separate years. "
+            "'yes' will always show the header. 'no' will never show the header."
+        },
+    )
 
     year_pattern: str = field(
         default=r"(?<!\d)(20[123]\d)(?!\d)",
         metadata={
             "help": "Regex pattern for matching years. This extracts the first group as the year and parses it as an "
-                    "integer. Make sure that other numbers are not matched by this pattern! For example, "
-                    "using negative lookbehind and lookaheads is encouraged to avoid matching longer numbers!"
+            "integer. Make sure that other numbers are not matched by this pattern! For example, "
+            "using negative lookbehind and lookaheads is encouraged to avoid matching longer numbers!"
         },
     )
     day_pattern: str = field(
-        default=r"(?<!\d)([012]?\d)(?!\d)", metadata={"help": "Regex pattern for matching days. Same as year_pattern."}
+        default=r"(?<!\d)([012]?\d)(?!\d)",
+        metadata={"help": "Regex pattern for matching days. Same as year_pattern."},
     )
     exclude_patterns: List[str] = field(
-        default_factory=list, metadata={
+        default_factory=list,
+        metadata={
             "help": "A list of comma separated glob patterns to ignore when looking for solutions. "
-                    "Listing the paths works too. "
-                    "For example: '*.py,*.js', '2023/05/05.c' or '2021/**.py'."
-                    "Make sure to escape the patterns with single quotes when running from the shell! "
-                    "Do NOT escape them when using the flag in the yaml! "
-                    "Otherwise the qoute will be part of the pattern."
-        }
+            "Listing the paths works too. "
+            "For example: '*.py,*.js', '2023/05/05.c' or '2021/**.py'."
+            "Make sure to escape the patterns with single quotes when running from the shell! "
+            "Do NOT escape them when using the flag in the yaml! "
+            "Otherwise the qoute will be part of the pattern."
+        },
     )
 
     overwrite_year: int = field(
         default=None,
         metadata={
             "help": "If your repository only contains a single year and it cannot be parsed from the path, then you "
-                    "should use this to overwrite the year. Every solution is presumed to be for this year."
+            "should use this to overwrite the year. Every solution is presumed to be for this year."
         },
     )
 
@@ -107,27 +129,35 @@ class Config:
         default="outline",
         metadata={
             "help": "Some languages have very light colors and are hard to see with a white font. Here you can choose "
-                    "how the text color changes when the background is too light. 'dark' makes the font dark, "
-                    "'outline' adds a black outline."
+            "how the text color changes when the background is too light. 'dark' makes the font dark, "
+            "'outline' adds a black outline."
         },
     )
     contrast_improvement_threshold: int = field(
-        default=30, metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."}
+        default=30,
+        metadata={"help": "Threshold for contrast improvement feature (between 0 and 255)."},
     )
     outline_color: Union[str, Tuple] = field(
-        default="#6C6A6A", metadata={"help": "Color used for outlining elements.", "type": str}
+        default="#6C6A6A",
+        metadata={"help": "Color used for outlining elements.", "type": str},
     )
     not_completed_color: Union[str, Tuple] = field(
-        default="#333333", metadata={"help": "Color to signify incomplete tasks.", "type": str}
+        default="#333333",
+        metadata={"help": "Color to signify incomplete tasks.", "type": str},
     )
     top100_color: Union[str, Tuple] = field(
-        default="#ffdd00", metadata={"help": "Color to highlight top 100 ranking. Only used if session"
-                                             "cookie is provided.", "type": str}
+        default="#ffdd00",
+        metadata={
+            "help": "Color to highlight top 100 ranking. Only used if sessioncookie is provided.",
+            "type": str,
+        },
     )
     text_color: Union[str, Tuple] = field(default="#FFFFFF", metadata={"help": "Text color.", "type": str})
 
-    tile_width_px: str = field(default="161px", metadata={"help": "Width of tiles in pixels. You likely don't need"
-                                                                  "to change this."})
+    tile_width_px: str = field(
+        default="161px",
+        metadata={"help": "Width of tiles in pixels. You likely don't needto change this."},
+    )
 
     def __post_init__(self):
         self.aoc_dir = Path(self.aoc_dir)

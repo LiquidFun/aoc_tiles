@@ -22,8 +22,7 @@ class SolutionFinder:
             self.repository = None
 
         if self.config.session_cookie_path.exists():
-            msg = f"This is a security risk!" \
-                  f" Ensure that the {self.config.session_cookie_path} "
+            msg = f"This is a security risk! Ensure that the {self.config.session_cookie_path} "
             if self.git_is_file_tracked(self.config.session_cookie_path):
                 msg += "file is not tracked by git!"
                 exit(f"[ERROR] Session cookie file is tracked by git. {msg} Aborting!")
@@ -78,18 +77,22 @@ class SolutionFinder:
             extension_is_supported = path.suffix in extension_to_colors()
             path_is_excluded = any([path.match(exclude) for exclude in self.config.exclude_patterns])
             if path_is_excluded:
-                logger.debug("Excluded: {} because of patterns: {}", path, self.config.exclude_patterns)
+                logger.debug(
+                    "Excluded: {} because of patterns: {}",
+                    path,
+                    self.config.exclude_patterns,
+                )
             if path.is_file() and extension_is_supported and not path_is_excluded:
                 solution_paths.append(path)
         logger.debug("Found {} solution files", len(solution_paths))
-        logger.trace("Solution files:", '\n'.join(map(str, solution_paths)))
+        logger.trace("Solution files:", "\n".join(map(str, solution_paths)))
         return solution_paths
 
     def git_is_file_ignored(self, filepath):
         if self.repository is None:
             return False
         try:
-            self.repository.git.execute(['git', 'check-ignore', '-q', str(filepath)])
+            self.repository.git.execute(["git", "check-ignore", "-q", str(filepath)])
             return True
         except GitCommandError:
             return False
@@ -98,7 +101,7 @@ class SolutionFinder:
     def git_get_tracked_files(self) -> List[str]:
         if self.repository is None:
             return []
-        return self.repository.git.ls_files().split('\n')
+        return self.repository.git.ls_files().split("\n")
 
     def git_is_file_tracked(self, filepath: Path):
         tracked_files = self.git_get_tracked_files()
@@ -112,7 +115,7 @@ class SolutionFinder:
         # Command based on this:
         # https://stackoverflow.com/questions/3284292/can-a-git-hook-automatically-add-files-to-the-commit
         if self.repository is not None:
-            self.repository.git.commit('--amend', '-C', 'HEAD', '--no-verify')
+            self.repository.git.commit("--amend", "-C", "HEAD", "--no-verify")
 
 
 def main():

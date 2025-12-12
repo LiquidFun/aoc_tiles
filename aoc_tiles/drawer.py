@@ -1,4 +1,5 @@
 """Tile drawing module - delegates to theme and animation systems."""
+
 from pathlib import Path
 from typing import List, Union
 
@@ -19,7 +20,12 @@ class TileDrawer:
         self.animation = get_animation(config)
 
     def draw_tile(
-            self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, stars: int
+        self,
+        day: str,
+        languages: List[str],
+        day_scores: Union[DayScores, None],
+        path: Path,
+        stars: int,
     ):
         """Saves a graphic for a given day and year. Returns the path to it."""
         if self.animation:

@@ -2,9 +2,10 @@
 
 Provides animated GIF output for tiles.
 """
+
 import random
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 
 from PIL import Image, ImageDraw
 
@@ -89,7 +90,7 @@ class SnowAnimation(Animation):
             append_images=frames[1:],
             duration=100,  # 100ms per frame
             loop=0,  # Loop forever
-            optimize=True
+            optimize=True,
         )
 
     def _create_flake(self, width: int, loop_height: int) -> Tuple:

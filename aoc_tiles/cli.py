@@ -3,10 +3,9 @@ import dataclasses
 import functools
 from dataclasses import fields
 from pathlib import Path
-from typing import Literal, Union, get_args, List, get_origin
+from typing import Literal, get_args, List, get_origin
 
 import rich.traceback
-from loguru import logger
 
 from aoc_tiles.config import Config
 from aoc_tiles.make_tiles import TileMaker
@@ -67,13 +66,13 @@ def cli_parse_config(datacls):
                 del kwargs["type"]
                 kwargs["action"] = "store_true"
             # print(kwargs)
-            parser.add_argument(f'--{field.name.replace("_", "-")}', **kwargs)
+            parser.add_argument(f"--{field.name.replace('_', '-')}", **kwargs)
 
     parser.add_argument(
         "positional args are ignored",
         nargs="*",
         help="Any non-keyword arguments are ignored. This is because pre-commit passes all arguments to the hook,"
-             " and we don't want to fail the hook because of that.",
+        " and we don't want to fail the hook because of that.",
     )
 
     args = vars(parser.parse_args())
